@@ -2,6 +2,7 @@ from app.core.enums.wallet_enums import WalletBalanceCurrenciesEnum
 from app.core.validations.exceptions import IsInstanceError, PinFormatError
 from app.core.validations.general_validations import GeneralValidation
 from app.users.domain import UserBase
+from app.wallets.strategy import WalletStrategy
 
 
 class WalletBaseValidation:
@@ -32,6 +33,12 @@ class WalletBaseValidation:
         GeneralValidation.isinstance_checker(owner, UserBase)
 
         return owner
+
+    @staticmethod
+    def valid_strategy(strategy: 'WalletStrategy') -> 'WalletStrategy':
+        GeneralValidation.isinstance_checker(strategy, WalletStrategy)
+
+        return strategy
 
     @staticmethod
     def valid_regular_balance_currency(regular_balance_currency: 'WalletBalanceCurrenciesEnum') -> 'WalletBalanceCurrenciesEnum':

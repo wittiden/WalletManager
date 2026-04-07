@@ -12,6 +12,7 @@ from app.core.validations.wallet_validations import WalletBaseValidation
 
 if TYPE_CHECKING:
     from app.users.domain import UserBase
+    from app.wallets.strategy import WalletStrategy
 
 P = ParamSpec('P')
 
