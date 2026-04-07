@@ -15,15 +15,8 @@ if TYPE_CHECKING:
 
 P = ParamSpec('P')
 
-password_signal = Signal()
-is_blocked_signal = Signal()
-owner_signal = Signal()
-strategy_signal = Signal()
-
-password_signal.connect(blink_func)
-is_blocked_signal.connect(blink_func)
-owner_signal.connect(blink_func)
-strategy_signal.connect(blink_func)
+wallet_upgrade_signal = Signal()
+wallet_upgrade_signal.connect(blink_func)
 
 
 @dataclass
@@ -66,30 +59,27 @@ class WalletBase(MixinId):
 
     @pin.setter
     def pin(self, value: str) -> None:
-        old_value = self._pin
         WalletBaseValidation.valid_pin(value)
         self._pin = get_hash(value)
-        password_signal.send(self, data=[old_value, value])
 
     @is_blocked.setter
     def is_blocked(self, value: 'bool') -> None:
         old_value = self._is_blocked
         WalletBaseValidation.valid_is_blocked(value)
         self._is_blocked = value
-        is_blocked_signal.send(self, data=[old_value, value])
+        wallet_upgrade_signal.send(self, field='is_blocked', old=old_value, new=value)
 
     @owner.setter
     def owner(self, value: 'UserBase') -> None:
         old_value = self._owner
         WalletBaseValidation.valid_owner(value)
         self._owner = value
-        owner_signal.send(self, data=[old_value, value])
+        wallet_upgrade_signal.send(self, field='owner', old=old_value, new=value)
 
     def __repr__(self) -> str:
         return f'{self.status.value} #{self.item_id} - owner: {self._owner.status if self._owner else 'кошелек не имеет привязки'} #{self._owner.item_id if self._owner else 'None'}\nAddress: {self._address}, is_blocked: {self._is_blocked}'
 
-    def __str__(self) -> str:
-        return f'{self.status.value} #{self.item_id} -> owner: {self._owner.status if self._owner else 'кошелек не имеет привязки'} #{self._owner.item_id if self._owner else 'None'}\nAddress: {self._address}, is_blocked: {self._is_blocked}'
+    __str__ = __repr__
 
 
 @dataclass
@@ -125,13 +115,12 @@ class RegularWallet(WalletBase):
         old_value = self._strategy
         WalletBaseValidation.valid_strategy(value)
         self._strategy = value
-        strategy_signal.send(self, data=[old_value, value])
+        wallet_upgrade_signal.send(self, field='strategy', old=old_value, new=value)
 
     def __repr__(self) -> str:
         return f'{super().__repr__()}\nStrategy: {type(self._strategy).__name__}\nBalance: {self._balance}'
 
-    def __str__(self) -> str:
-        return f'{super().__str__()}\nStrategy: {type(self._strategy).__name__}\nBalance: {self._balance}'
+    __str__ = __repr__
 
 
 @dataclass
@@ -155,5 +144,4 @@ class ForeignWallet(WalletBase):
     def __repr__(self) -> str:
         return f'{super().__repr__()}\nBalance: {self._balance}'
 
-    def __str__(self) -> str:
-        return f'{super().__str__()}\nBalance: {self._balance}'
+    __str__ = __repr__
