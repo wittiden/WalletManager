@@ -19,3 +19,5 @@ class IsEmptyError(Exception): pass
 class IsInstanceError(Exception): pass
 
 class WebElementNotFoundError(Exception): pass
+
+class ElementNotFoundError(Exception): pass
