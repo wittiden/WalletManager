@@ -19,3 +19,7 @@ class IsEmptyError(Exception): pass
 class IsInstanceError(Exception): pass
 
 class WebElementNotFoundError(Exception): pass
+
+class WalletIsBlockedError(Exception): pass
+class WalletIsNotBlockedError(Exception): pass
+class WalletIsNotClose(Exception): pass
