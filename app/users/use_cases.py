@@ -24,17 +24,17 @@ class UserServiceFacade:
         self._sort_user_service = sort_user_service
 
     @debug_log
-    @info_log(['Создание пользователя:', 'Пользователь создан!'])
+    @info_log(['', 'Пользователь создан'])
     def create_user(self, key: 'UserStatusesEnum', name: str, email: str, password: str) -> 'UserBase':
         return self._create_user_service.create_user(key, name, email, password)
 
     @debug_log
-    @info_log(['Вход в аккаунт:', 'Вы вошли в аккаунт!'])
+    @info_log(['', 'Вы вошли в аккаунт'])
     def login_user(self, email: str, password: str) -> 'UserBase':
         return self._login_user_service.login_user(email, password)
 
     @debug_log
-    @info_log(['Создание пользователя:', 'Пользователь создан и вход выполнен!'])
+    @info_log(['', 'Пользователь создан и вход выполнен'])
     def create_and_login_user(self, key: 'UserStatusesEnum', name: str, email: str, password: str) -> 'UserBase':
         self._create_user_service.create_user(key, name, email, password)
         return self._login_user_service.login_user(email, password)
@@ -62,12 +62,12 @@ class UserServiceFacade:
         return [all_users,'\n\n', sorted_users]
 
     @debug_log
-    @info_log(['Блокировка пользователя: ', 'Пользователь заблокирован!'])
+    @info_log(['', 'Пользователь заблокирован'])
     def block_user(self, user: 'UserBase', find_user_id: str) -> None:
         self._block_user_service.block_user(user, find_user_id)
 
     @debug_log
-    @info_log(['Разблокировка пользователя: ', 'Пользователь разблокирован!'])
+    @info_log(['', 'Пользователь разблокирован'])
     def unblock_user(self, user: 'UserBase', find_user_id: str) -> None:
         self._block_user_service.unblock_user(user, find_user_id)
 
