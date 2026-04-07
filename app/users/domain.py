@@ -1,9 +1,24 @@
 from dataclasses import dataclass, field
 from typing import Any
+from blinker import Signal
 
 from app.core.enums.user_enums import UserStatusesEnum
-from app.core.utils.general_funcs import get_hash
+from app.core.utils.general_funcs import get_hash, blink_func
 from app.core.utils.mixins import MixinId
+from app.core.validations.user_validations import UserBaseValidation
+
+
+user_name_signal = Signal()
+user_email_signal = Signal()
+user_password_signal = Signal()
+user_is_blocked_signal = Signal()
+user_wallets_signal = Signal()
+
+user_name_signal.connect(blink_func)
+user_email_signal.connect(blink_func)
+user_password_signal.connect(blink_func)
+user_is_blocked_signal.connect(blink_func)
+user_wallets_signal.connect(blink_func)
 
 
 @dataclass
@@ -18,6 +33,10 @@ class UserBase(MixinId):
 
     def __post_init__(self) -> None:
         super().__init__()
+
+        UserBaseValidation.valid_name(self._name)
+        UserBaseValidation.valid_email(self._email)
+        UserBaseValidation.valid_password(self._password)
 
         self._password = get_hash(self._password)
 
@@ -43,20 +62,28 @@ class UserBase(MixinId):
 
     @name.setter
     def name(self, value: str) -> None:
-        self._name = value
+        old_value = self._name
+        self._name = UserBaseValidation.valid_name(value)
+        user_name_signal.send(self, data=[old_value, value])
 
     @email.setter
     def email(self, value: str) -> None:
-        self._email = value
+        old_value = self._email
+        self._email = UserBaseValidation.valid_email(value)
+        user_email_signal.send(self, data=[old_value, value])
 
     @password.setter
     def password(self, value: str) -> None:
-        self._password = value
+        old_value = self._password
+        self._password = UserBaseValidation.valid_password(value)
         self._password = get_hash(self._password)
+        user_password_signal.send(self, data=[old_value, value])
 
     @is_blocked.setter
     def is_blocked(self, value: bool) -> None:
-        self._is_blocked = value
+        old_value = self._is_blocked
+        self._is_blocked = UserBaseValidation.valid_is_blocked(value)
+        user_is_blocked_signal.send(self, data=[old_value, value])
 
     def __repr__(self) -> str:
         return f'{self._status.value} #{self.item_id}\nName: {self._name}, email: {self._email}, password: {self._password}, is_blocked: {self._is_blocked}'
