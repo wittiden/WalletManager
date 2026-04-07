@@ -10,17 +10,7 @@ from app.core.validations.user_validations import UserBaseValidation
 if TYPE_CHECKING:
     from app.wallets.domain import WalletBase
 
-user_name_signal = Signal()
-user_email_signal = Signal()
-user_password_signal = Signal()
-user_is_blocked_signal = Signal()
-user_wallets_signal = Signal()
-
-user_name_signal.connect(blink_func)
-user_email_signal.connect(blink_func)
-user_password_signal.connect(blink_func)
-user_is_blocked_signal.connect(blink_func)
-user_wallets_signal.connect(blink_func)
+user_upgrade_signal = Signal()
 
 
 @dataclass
@@ -66,33 +56,29 @@ class UserBase(MixinId):
     def name(self, value: str) -> None:
         old_value = self._name
         self._name = UserBaseValidation.valid_name(value)
-        user_name_signal.send(self, data=[old_value, value])
+        user_upgrade_signal.send(self, field='name', old=old_value, new=value)
 
     @email.setter
     def email(self, value: str) -> None:
         old_value = self._email
         self._email = UserBaseValidation.valid_email(value)
-        user_email_signal.send(self, data=[old_value, value])
+        user_upgrade_signal.send(self, field='email', old=old_value, new=value)
 
     @password.setter
     def password(self, value: str) -> None:
-        old_value = self._password
         self._password = UserBaseValidation.valid_password(value)
         self._password = get_hash(self._password)
-        user_password_signal.send(self, data=[old_value, value])
 
     @is_blocked.setter
     def is_blocked(self, value: bool) -> None:
         old_value = self._is_blocked
         self._is_blocked = UserBaseValidation.valid_is_blocked(value)
-        user_is_blocked_signal.send(self, data=[old_value, value])
+        user_upgrade_signal.send(self, field='is_blocked', old=old_value, new=value)
 
     def __repr__(self) -> str:
-        return f'{self._status.value} #{self.item_id}\nName: {self._name}, email: {self._email}, password: {self._password}, is_blocked: {self._is_blocked}'
+        return f'{self._status.value} #{self.item_id}\nName: {self._name}, email: {self._email}, is_blocked: {self._is_blocked}'
 
-    def __str__(self) -> str:
-        return f'{self._status.value} #{self.item_id}\nName: {self._name}, email: {self._email}, password: {self._password}, is_blocked: {self._is_blocked}'
-
+    __str__ = __repr__
 
 @dataclass
 class Client(UserBase):
@@ -112,8 +98,7 @@ class Client(UserBase):
     def __repr__(self) -> str:
         return f'{super().__repr__()}\nWallets:\n{[f'{wallet}\n' for wallet in self._wallets]}\n'
 
-    def __str__(self) -> str:
-        return f'{super().__str__()}\nWallets:\n{[f'{wallet}\n' for wallet in self._wallets]}\n'
+    __str__ = __repr__
 
 
 @dataclass
@@ -128,5 +113,4 @@ class Admin(UserBase):
     def __repr__(self) -> str:
         return f'{super().__repr__()}\n'
 
-    def __str__(self) -> str:
-        return f'{super().__str__()}\n'
+    __str__ = __repr__
