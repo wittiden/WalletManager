@@ -8,6 +8,7 @@ from app.core.enums.wallet_enums import WalletBalanceCurrenciesEnum
 from app.core.enums.wallet_enums import WalletTypesEnum
 from app.core.utils.general_funcs import get_hash, blink_func
 from app.core.utils.mixins import MixinId
+from app.core.validations.wallet_validations import WalletBaseValidation
 
 if TYPE_CHECKING:
     from app.users.domain import UserBase
@@ -37,6 +38,8 @@ class WalletBase(MixinId):
     def __post_init__(self) -> None:
         super().__init__()
 
+        WalletBaseValidation.valid_pin(self._pin)
+
         self._address: str = uuid.uuid4().hex[:16]
 
         self._pin = get_hash(self._pin)
@@ -64,18 +67,21 @@ class WalletBase(MixinId):
     @pin.setter
     def pin(self, value: str) -> None:
         old_value = self._pin
+        WalletBaseValidation.valid_pin(value)
         self._pin = get_hash(value)
         password_signal.send(self, data=[old_value, value])
 
     @is_blocked.setter
     def is_blocked(self, value: 'bool') -> None:
         old_value = self._is_blocked
+        WalletBaseValidation.valid_is_blocked(value)
         self._is_blocked = value
         is_blocked_signal.send(self, data=[old_value, value])
 
     @owner.setter
     def owner(self, value: 'UserBase') -> None:
         old_value = self._owner
+        WalletBaseValidation.valid_owner(value)
         self._owner = value
         owner_signal.send(self, data=[old_value, value])
 
@@ -96,6 +102,9 @@ class RegularWallet(WalletBase):
     def __post_init__(self) -> None:
         super().__post_init__()
 
+        WalletBaseValidation.valid_strategy(self._strategy)
+        WalletBaseValidation.valid_regular_balance_currency(self._regular_balance_currency)
+
         self._balance: dict[str, Decimal] = {self._regular_balance_currency.name: Decimal('0.00')}
         self._status = WalletTypesEnum.REGULAR
 
@@ -114,6 +123,7 @@ class RegularWallet(WalletBase):
     @strategy.setter
     def strategy(self, value: 'WalletStrategy') -> None:
         old_value = self._strategy
+        WalletBaseValidation.valid_strategy(value)
         self._strategy = value
         strategy_signal.send(self, data=[old_value, value])
 
@@ -132,6 +142,8 @@ class ForeignWallet(WalletBase):
 
     def __post_init__(self) -> None:
         super().__post_init__()
+
+        WalletBaseValidation.valid_foreign_balance_currencies(self._foreign_balance_currencies)
 
         self._balance: dict[str, Decimal] = {el.name: Decimal('0.00') for el in self._foreign_balance_currencies}
         self._status = WalletTypesEnum.FOREIGN
