@@ -1,0 +1,71 @@
+# =========================
+# Virtual environments
+# =========================
+.venv/
+venv/
+ENV/
+env/
+.envrc
+
+# =========================
+# Environment variables
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# Python cache
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# =========================
+# Tests / tools cache
+# =========================
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.tox/
+
+# =========================
+# IDE (PyCharm / VSCode)
+# =========================
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Logs
+# =========================
+*.log
+logs/
+
+# =========================
+# Distribution / build
+# =========================
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# =========================
+# Docker (optional)
+# =========================
+*.pid
+
+# =========================
+# Jupyter Notebook
+# =========================
+.ipynb_checkpoints/
