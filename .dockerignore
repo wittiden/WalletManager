@@ -1,0 +1,44 @@
+# 🔹 Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+
+# 🔹 Virtual environments
+.venv/
+venv/
+env/
+
+# 🔹 Git
+.git/
+.gitignore
+
+# 🔹 IDE
+.idea/
+.vscode/
+
+# 🔹 Testing / lint
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# 🔹 OS files
+.DS_Store
+Thumbs.db
+
+# 🔹 Docker
+Dockerfile
+.dockerignore
+
+# 🔹 Environment variables
+.env
+.env.*
+
+# 🔹 Build / dist
+build/
+dist/
+*.egg-info/
+
+# 🔹 Node (если вдруг есть фронт)
+node_modules/

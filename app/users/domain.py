@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING
 from blinker import Signal
 
 from app.core.enums.user_enums import UserStatusesEnum
@@ -7,6 +7,8 @@ from app.core.utils.general_funcs import get_hash, blink_func
 from app.core.utils.mixins import MixinId
 from app.core.validations.user_validations import UserBaseValidation
 
+if TYPE_CHECKING:
+    from app.wallets.domain import WalletBase
 
 user_name_signal = Signal()
 user_email_signal = Signal()
@@ -96,7 +98,7 @@ class UserBase(MixinId):
 class Client(UserBase):
     """Датакласс для хранения данных клиента"""
 
-    _wallets: list[Any] = field(default_factory=list, init=False)
+    _wallets: list['WalletBase'] = field(default_factory=list, init=False)
 
     def __post_init__(self) -> None:
         super().__post_init__()
@@ -104,7 +106,7 @@ class Client(UserBase):
         self._status = UserStatusesEnum.CLIENT
 
     @property
-    def wallets(self) -> list[Any]:
+    def wallets(self) -> list['WalletBase']:
         return self._wallets
 
     def __repr__(self) -> str:
