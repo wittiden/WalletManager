@@ -8,5 +8,5 @@ def get_hash(obj: Any) -> str:
 
     return hashlib.sha256(str(obj).encode()).hexdigest()
 
-def blink_func(sender: Any, data: list[Any]):
-    logger.debug(f'{type(sender).__name__} #{sender.item_id}: {data[0]} -> {data[-1]}')
+def blink_func(sender: Any, field: str, old: Any, new: Any):
+    logger.debug(f'{type(sender).__name__} #{sender.item_id} | {field}: {old} -> {new}')

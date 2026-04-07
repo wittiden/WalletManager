@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from app.wallets.domain import WalletBase
 
 user_upgrade_signal = Signal()
+user_upgrade_signal.connect(blink_func)
 
 
 @dataclass
