@@ -1,0 +1,45 @@
+[tool.pytest.ini_options]
+testpaths = ['app/tests']
+python_files = ['test_*.py']
+python_classes = ['Test*']
+python_functions = ['test_*']
+
+addopts = '-q --disable-warnings --maxfail=1 --tb=short'
+
+log_cli = true
+log_cli_level = 'INFO'
+
+markers = [
+    'slow: slow tests',
+    'unit: unit tests',
+    'integration: integration tests',
+    'e2e: end-to-end tests'
+]
+
+#pytest -m unit
+#pytest -m integration
+#pytest -m e2e
+
+#@pytest.mark.timeout(2)
+
+[tool.ruff]
+target-version = 'py312'
+
+line-length = 88
+
+exclude = [
+    '.venv',
+    '__pycache__',
+    '.git',
+
+    #Временно
+    'app/main.py'
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B"]
+
+ignore = ['E501']
+
+[tool.ruff.format]
+quote-style = 'single'

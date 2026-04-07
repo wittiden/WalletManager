@@ -1,0 +1,21 @@
+#logging
+loguru~=0.7.3
+
+#formater, linter
+ruff~=0.15.8
+
+#observer
+blinker~=1.9.0
+
+#enum
+aenum~=3.1.17
+
+#tests
+pytest~=9.0.2
+pytest-timeout~=2.4.0
+
+#parsing
+beautifulsoup4~=4.12.3
+requests~=2.33.1
+fake-useragent~=2.2.0
+lxml~=6.0.2
