@@ -20,26 +20,23 @@ class TestUserBase:
         if key == 'client_sample':
             assert client_sample.name == name
             assert client_sample.email == email
-            assert client_sample.password == get_hash(password)
+            assert client_sample.password == password
 
         elif key == 'admin_sample':
             assert admin_sample.name == name
             assert admin_sample.email == email
-            assert admin_sample.password == get_hash(password)
+            assert admin_sample.password == password
 
         elif key == 'client':
             user = Admin(name, email, password)
             assert user.name == name
             assert user.email == email
-            assert user.password == get_hash(password)
+            assert user.password == password
 
     @pytest.mark.parametrize('key, name, email, password, exception', [
-        ('client', '432j', 'param_test@gmail.com', 'bqfkgqywgfigfi', NameFormatError),
-        ('client', 'gre4ege32', 'param_test@gmail.com', 'bqfkgqywgfigfi', NameFormatError),
-        ('client', 'test', 'param_test@@gmail.com', 'bqfkgqywgfigfi', EmailFormatError),
-        ('client', 'test', '@gmail.com', 'bqfkgqywgfigfi', IsEmptyError),
-        ('client', 'test', 'param_test@', 'bqfkgqywgfigfi', IsEmptyError),
-        ('admin', 'test', 'param_test2@gmail.com', ';', PasswordFormatError)
+        ('client', '', 'param_test@gmail.com', 'bqfkgqywgfigfi', IsEmptyError),
+        ('client', 'gre4ege32', '', 'bqfkgqywgfigfi', IsEmptyError),
+        ('client', 'test', 'param_test@@gmail.com', '', IsEmptyError)
     ])
     def test_user_bad(self, key, name, email, password, exception):
         with pytest.raises(exception):

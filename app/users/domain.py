@@ -3,9 +3,9 @@ from typing import TYPE_CHECKING
 from blinker import Signal
 
 from app.core.enums.user_enums import UserStatusesEnum
-from app.core.utils.general_funcs import get_hash, blink_func
+from app.core.utils.general_funcs import blink_func
 from app.core.utils.mixins import MixinId
-from app.core.validations.user_validations import UserBaseValidation
+from app.core.validations.invariants import DomainInvariant
 
 if TYPE_CHECKING:
     from app.wallets.domain import WalletBase
@@ -27,11 +27,9 @@ class UserBase(MixinId):
     def __post_init__(self) -> None:
         super().__init__()
 
-        UserBaseValidation.valid_name(self._name)
-        UserBaseValidation.valid_email(self._email)
-        UserBaseValidation.valid_password(self._password)
-
-        self._password = get_hash(self._password)
+        DomainInvariant.no_empty('name', self._name)
+        DomainInvariant.no_empty('email', self._email)
+        DomainInvariant.no_empty('password', self._password)
 
     @property
     def name(self) -> str:
@@ -56,24 +54,23 @@ class UserBase(MixinId):
     @name.setter
     def name(self, value: str) -> None:
         old_value = self._name
-        self._name = UserBaseValidation.valid_name(value)
+        self._name = DomainInvariant.no_empty('name', value)
         user_upgrade_signal.send(self, field='name', old=old_value, new=value)
 
     @email.setter
     def email(self, value: str) -> None:
         old_value = self._email
-        self._email = UserBaseValidation.valid_email(value)
+        self._email = DomainInvariant.no_empty('email', value)
         user_upgrade_signal.send(self, field='email', old=old_value, new=value)
 
     @password.setter
     def password(self, value: str) -> None:
-        self._password = UserBaseValidation.valid_password(value)
-        self._password = get_hash(self._password)
+        self._password = DomainInvariant.no_empty('password', value)
 
     @is_blocked.setter
     def is_blocked(self, value: bool) -> None:
         old_value = self._is_blocked
-        self._is_blocked = UserBaseValidation.valid_is_blocked(value)
+        self._is_blocked = DomainInvariant.is_instance('is_blocked', value, bool)
         user_upgrade_signal.send(self, field='is_blocked', old=old_value, new=value)
 
     def __repr__(self) -> str:

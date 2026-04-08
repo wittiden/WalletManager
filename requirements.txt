@@ -4,6 +4,9 @@ loguru~=0.7.3
 #formater, linter
 ruff~=0.15.8
 
+#validation
+pydantic~=2.12.5
+
 #observer
 blinker~=1.9.0
 

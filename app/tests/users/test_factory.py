@@ -11,15 +11,15 @@ class TestUserFactory:
     """Класс для тестирования фабрики по созданию пользователя"""
 
     @pytest.mark.parametrize('key, name, email, password', [
-        (UserStatusesEnum.CLIENT, 'denis', 'ar.den@gmail.com', 'wrlvjwrel'),
-        (UserStatusesEnum.ADMIN, 'tomal', 'test@mail.ru', 'rehqglhrgoqeh')
+        (UserStatusesEnum.CLIENT, 'denis', 'ar.den@gmail.com', 'wrlvjw&r3243a84el'),
+        (UserStatusesEnum.ADMIN, 'tomal', 'test@mail.ru', 'rehqglhrgferf88*oqeh')
     ])
     def test_create_user(self, key, name, email, password, user_factory):
         user = user_factory.create_user(key, name, email, password)
         assert user.status == key
         assert user.name == name
         assert user.email == email
-        assert user.password == get_hash(password)
+        assert user.password == password
 
 
 @pytest.mark.unit

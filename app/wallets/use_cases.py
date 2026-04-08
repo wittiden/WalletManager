@@ -1,11 +1,13 @@
 from typing import Any, TYPE_CHECKING
 
-from app.core.enums.wallet_enums import WalletTypesEnum
+from app.core.enums.wallet_enums import WalletTypesEnum, WalletBalanceCurrenciesEnum
+from app.core.utils.general_funcs import get_hash
 from app.core.validations.exceptions import WalletIsBlockedError, WalletIsNotBlockedError, WalletIsNotClose, \
-    AllParametersIsNoneError
+    AllParametersIsNoneError, UnknownWalletTypeError
 from app.core.validations.general_validations import UseCasesValidation, GeneralValidation
 from app.wallets.domain import WalletBase
 from app.core.utils.decorators import debug_log, info_log
+from app.wallets.schemas import CreateRegularWalletSchema, CreateForeignWalletSchema, CloseWalletSchema
 
 if TYPE_CHECKING:
     from app.users.domain import UserBase
@@ -26,8 +28,13 @@ class WalletServiceFacade:
 
     @debug_log
     @info_log(['','Пользователь создан'])
-    def create_wallet(self, user: 'UserBase', key: 'WalletTypesEnum', pin: str, balance_currency: Any, strategy: 'WalletStrategy' = None) -> 'WalletBase':
-        return self._create_wallet_service.create_wallet(user, key, pin, balance_currency, strategy)
+    def create_wallet(self, user: 'UserBase', schema: 'CreateRegularWalletSchema | CreateForeignWalletSchema') -> 'WalletBase':
+        if isinstance(schema, CreateRegularWalletSchema):
+            return self._create_wallet_service.create_regular_wallet(user, schema.key, schema.pin, schema.balance_currency, schema.strategy)
+        elif isinstance(schema, CreateForeignWalletSchema):
+            return self._create_wallet_service.create_foreign_wallet(user, schema.key, schema.pin, schema.balance_currency)
+
+        raise UnknownWalletTypeError
 
     @debug_log
     @info_log(['Информация о кошельке:',''])
@@ -46,8 +53,8 @@ class WalletServiceFacade:
 
     @debug_log
     @info_log(['Отсортированные кошельки:',''])
-    def sort_wallets(self, user: 'UserBase', pin: bool = None, is_blocked: bool = None, owner: bool = None, status: bool = None, address: bool = None) -> list['WalletBase']:
-        return self._sort_wallet_service.sort_wallets(user, pin, is_blocked, owner, status, address)
+    def sort_wallets(self, user: 'UserBase', is_blocked: bool = None, owner: bool = None, status: bool = None, address: bool = None) -> list['WalletBase']:
+        return self._sort_wallet_service.sort_wallets(user, is_blocked, owner, status, address)
 
     @debug_log
     @info_log(['','Кошелек заблокирован'])
@@ -61,8 +68,8 @@ class WalletServiceFacade:
 
     @debug_log
     @info_log(['','Кошелек закрыт и удален с вашего аккаунта'])
-    def close_wallet(self, user: 'UserBase', wallet_id: str, pin: str) -> None:
-        self._close_wallet_service.close_my_wallet(user, wallet_id, pin)
+    def close_wallet(self, user: 'UserBase', schema: 'CloseWalletSchema') -> None:
+        self._close_wallet_service.close_my_wallet(user, schema.wallet_id, schema.pin)
 
 
 class CreateWalletService:
@@ -72,15 +79,23 @@ class CreateWalletService:
         self._wallet_repository = wallet_repository
         self._wallet_factory = wallet_factory
 
-    def create_wallet(self, user: 'UserBase', key: 'WalletTypesEnum', pin: str, balance_currency: Any, strategy: 'WalletStrategy' = None) -> 'WalletBase':
+    def create_regular_wallet(self, user: 'UserBase', key: 'WalletTypesEnum', pin: str, balance_currency: 'WalletBalanceCurrenciesEnum', strategy: 'WalletStrategy') -> 'WalletBase':
         UseCasesValidation.is_client_checker(user)
 
-        if key == WalletTypesEnum.REGULAR:
-            GeneralValidation.not_none_checker(strategy)
-            wallet = self._wallet_factory.create_wallet(key, pin, balance_currency, strategy)
+        wallet = self._wallet_factory.create_wallet(key, get_hash(pin), balance_currency, strategy)
 
-        elif key == WalletTypesEnum.FOREIGN:
-            wallet = self._wallet_factory.create_wallet(key, pin, balance_currency)
+        GeneralValidation.not_none_checker(wallet)
+
+        user._wallets.append(wallet)
+        wallet.owner = user
+        self._wallet_repository.add_wallet(wallet)
+
+        return wallet
+
+    def create_foreign_wallet(self, user: 'UserBase', key: 'WalletTypesEnum', pin: str, balance_currency: list['WalletBalanceCurrenciesEnum']) -> 'WalletBase':
+        UseCasesValidation.is_client_checker(user)
+
+        wallet = self._wallet_factory.create_wallet(key, get_hash(pin), balance_currency)
 
         GeneralValidation.not_none_checker(wallet)
 
@@ -155,7 +170,7 @@ class CloseWalletService:
         if not my_wallet.owner.item_id == user.item_id:
             raise WalletIsNotClose
 
-        if pin == my_wallet.pin:
+        if get_hash(pin) != my_wallet.pin:
             raise WalletIsNotClose
 
         self._wallet_repository.del_wallet(my_wallet.item_id)
@@ -168,12 +183,12 @@ class SortWalletService:
     def __init__(self, wallet_repository: 'WalletRepository') -> None:
         self._wallet_repository = wallet_repository
 
-    def sort_wallets(self, user: 'UserBase', pin: bool = None, is_blocked: bool = None, owner: bool = None, status: bool = None, address: bool = None):
+    def sort_wallets(self, user: 'UserBase', is_blocked: bool = None, owner: bool = None, status: bool = None, address: bool = None):
         UseCasesValidation.is_admin_checker(user)
 
         all_wallets = self._wallet_repository.get_all_wallets()
 
-        param_dict = {'pin': pin, 'is_blocked': is_blocked, 'owner': owner, 'status': status, 'address': address}
+        param_dict = {'is_blocked': is_blocked, 'owner': owner, 'status': status, 'address': address}
         for key, value in param_dict.items():
             if value:
                 return sorted(all_wallets, key=lambda r : getattr(r, key))

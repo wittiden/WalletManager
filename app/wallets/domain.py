@@ -6,9 +6,9 @@ from blinker import Signal
 
 from app.core.enums.wallet_enums import WalletBalanceCurrenciesEnum
 from app.core.enums.wallet_enums import WalletTypesEnum
-from app.core.utils.general_funcs import get_hash, blink_func
+from app.core.utils.general_funcs import blink_func
 from app.core.utils.mixins import MixinId
-from app.core.validations.wallet_validations import WalletBaseValidation
+from app.core.validations.invariants import DomainInvariant
 
 if TYPE_CHECKING:
     from app.users.domain import UserBase
@@ -25,18 +25,16 @@ class WalletBase(MixinId):
     """Базовый класс для хранения данных кошелька"""
 
     _pin: str
+    _owner: 'UserBase'
     _is_blocked: bool = field(default=False, init=False)
-    _owner: 'UserBase' = field(default=None, init=False)
     _status: 'WalletTypesEnum' = field(default=WalletTypesEnum.UNKNOWN, init=False)
 
     def __post_init__(self) -> None:
         super().__init__()
 
-        WalletBaseValidation.valid_pin(self._pin)
+        DomainInvariant.no_empty('pin', self._pin)
 
         self._address: str = uuid.uuid4().hex[:16]
-
-        self._pin = get_hash(self._pin)
 
     @property
     def pin(self) -> str:
@@ -60,22 +58,19 @@ class WalletBase(MixinId):
 
     @pin.setter
     def pin(self, value: str) -> None:
-        WalletBaseValidation.valid_pin(value)
-        self._pin = get_hash(value)
-
-    @is_blocked.setter
-    def is_blocked(self, value: 'bool') -> None:
-        old_value = self._is_blocked
-        WalletBaseValidation.valid_is_blocked(value)
-        self._is_blocked = value
-        wallet_upgrade_signal.send(self, field='is_blocked', old=old_value, new=value)
+        self._pin = DomainInvariant.no_empty('pin', value)
 
     @owner.setter
     def owner(self, value: 'UserBase') -> None:
         old_value = self._owner
-        WalletBaseValidation.valid_owner(value)
-        self._owner = value
+        self._owner = DomainInvariant.no_none('owner', value)
         wallet_upgrade_signal.send(self, field='owner', old=old_value, new=value)
+
+    @is_blocked.setter
+    def is_blocked(self, value: 'bool') -> None:
+        old_value = self._is_blocked
+        self._is_blocked = DomainInvariant.is_instance('is_blocked', value, bool)
+        wallet_upgrade_signal.send(self, field='is_blocked', old=old_value, new=value)
 
     def __repr__(self) -> str:
         return f'{self.status.value} #{self.item_id} - owner: {self._owner.status if self._owner else 'кошелек не имеет привязки'} #{self._owner.item_id if self._owner else 'None'}\nAddress: {self._address}, is_blocked: {self._is_blocked}'
@@ -93,8 +88,8 @@ class RegularWallet(WalletBase):
     def __post_init__(self) -> None:
         super().__post_init__()
 
-        WalletBaseValidation.valid_strategy(self._strategy)
-        WalletBaseValidation.valid_regular_balance_currency(self._regular_balance_currency)
+        DomainInvariant.no_none('strategy', self._strategy)
+        DomainInvariant.is_instance('regular_balance_currency', self._regular_balance_currency, WalletBalanceCurrenciesEnum)
 
         self._balance: dict[str, Decimal] = {self._regular_balance_currency.name: Decimal('0.00')}
         self._status = WalletTypesEnum.REGULAR
@@ -114,8 +109,7 @@ class RegularWallet(WalletBase):
     @strategy.setter
     def strategy(self, value: 'WalletStrategy') -> None:
         old_value = self._strategy
-        WalletBaseValidation.valid_strategy(value)
-        self._strategy = value
+        self._strategy = DomainInvariant.no_none('strategy', value)
         wallet_upgrade_signal.send(self, field='strategy', old=old_value, new=value)
 
     def __repr__(self) -> str:
@@ -133,7 +127,7 @@ class ForeignWallet(WalletBase):
     def __post_init__(self) -> None:
         super().__post_init__()
 
-        WalletBaseValidation.valid_foreign_balance_currencies(self._foreign_balance_currencies)
+        DomainInvariant.no_none('foreign_balance_currencies', self._foreign_balance_currencies)
 
         self._balance: dict[str, Decimal] = {el.name: Decimal('0.00') for el in self._foreign_balance_currencies}
         self._status = WalletTypesEnum.FOREIGN

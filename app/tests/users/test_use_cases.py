@@ -12,8 +12,8 @@ class TestCreateUserService:
     """Класс для тестирования сервиса по созданию пользователей"""
 
     @pytest.mark.parametrize('key, name, email, password', [
-        (UserStatusesEnum.CLIENT, 'test', 'test@gmail.com', 'rjqlrhuqog324f'),
-        (UserStatusesEnum.ADMIN, 'test', 'test2@gmail.com', 'rjqfwlrhuqog324f')
+        (UserStatusesEnum.CLIENT, 'test', 'test@gmail.com', 'rjqlrhuqog&n324f'),
+        (UserStatusesEnum.ADMIN, 'test', 'test2@gmail.com', 'rjqfwlrhu$qog324f')
     ])
     def test_create_user_good(self, create_user_service, key, name, email, password):
         user = create_user_service.create_user(key, name, email, password)
@@ -50,7 +50,7 @@ class TestLoginUserService:
         user = create_user_service.create_user(client_sample.status, client_sample.name, client_sample.email, client_sample.password)
         user.is_blocked = is_blocked
         with pytest.raises(exceptions):
-            login_user_service.login_user(email, get_hash(password))
+            login_user_service.login_user(email, password)
 
 
 @pytest.mark.unit

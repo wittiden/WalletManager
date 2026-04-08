@@ -6,6 +6,7 @@ from app.core.utils.general_funcs import get_hash
 from app.core.validations.exceptions import EmailValueExistsError, PasswordValueNotExistsError, \
     UserIsBlockedError, EmailValueNotExistsError, AllParametersIsNoneError, UserIsNotBlockedError
 from app.core.validations.general_validations import UseCasesValidation, GeneralValidation
+from app.users.schemes import CreateUserSchema, LoginUserSchema
 
 if TYPE_CHECKING:
     from app.users.domain import UserBase
@@ -25,19 +26,19 @@ class UserServiceFacade:
 
     @debug_log
     @info_log(['', 'Пользователь создан'])
-    def create_user(self, key: 'UserStatusesEnum', name: str, email: str, password: str) -> 'UserBase':
-        return self._create_user_service.create_user(key, name, email, password)
+    def create_user(self, schema: 'CreateUserSchema') -> 'UserBase':
+        return self._create_user_service.create_user(schema.key, schema.name, schema.email, schema.password)
 
     @debug_log
     @info_log(['', 'Вы вошли в аккаунт'])
-    def login_user(self, email: str, password: str) -> 'UserBase':
-        return self._login_user_service.login_user(email, password)
+    def login_user(self, schema: 'LoginUserSchema') -> 'UserBase':
+        return self._login_user_service.login_user(schema.email, schema.password)
 
     @debug_log
     @info_log(['', 'Пользователь создан и вход выполнен'])
-    def create_and_login_user(self, key: 'UserStatusesEnum', name: str, email: str, password: str) -> 'UserBase':
-        self._create_user_service.create_user(key, name, email, password)
-        return self._login_user_service.login_user(email, password)
+    def create_and_login_user(self, schema: 'CreateUserSchema') -> 'UserBase':
+        self.create_user(schema)
+        return self.login_user(schema)
 
     @debug_log
     @info_log(['Информация о пользователе:', ''])
@@ -56,10 +57,8 @@ class UserServiceFacade:
 
     @debug_log
     @info_log(['Сортировка пользователей:', ''])
-    def show_and_sort_users(self, user: 'UserBase', item_id: bool = None, name: bool = None, email: bool = None, password: bool = None, is_blocked: bool = None) -> list:
-        all_users = self.show_all_users(user)
-        sorted_users = self._sort_user_service.sort_users(user, item_id, name, email, password, is_blocked)
-        return [all_users,'\n\n', sorted_users]
+    def sort_users(self, user: 'UserBase', item_id: bool = None, name: bool = None, email: bool = None, password: bool = None, is_blocked: bool = None) -> list:
+        return self._sort_user_service.sort_users(user, item_id, name, email, password, is_blocked)
 
     @debug_log
     @info_log(['', 'Пользователь заблокирован'])
@@ -84,7 +83,7 @@ class CreateUserService:
             if user.email == email:
                 raise EmailValueExistsError
 
-        user = self._user_factory.create_user(key, name, email, password)
+        user = self._user_factory.create_user(key, name, email, get_hash(password))
         GeneralValidation.not_none_checker(user)
 
         self._repository.add_user(user)
