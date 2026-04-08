@@ -28,9 +28,9 @@ class WalletServiceFacade:
 
     @debug_log
     @info_log(['','Пользователь создан'])
-    def create_wallet(self, user: 'UserBase', schema: 'CreateRegularWalletSchema | CreateForeignWalletSchema') -> 'WalletBase':
+    def create_wallet(self, user: 'UserBase', schema: 'CreateRegularWalletSchema | CreateForeignWalletSchema', strategy: 'WalletStrategy' = None) -> 'WalletBase':
         if isinstance(schema, CreateRegularWalletSchema):
-            return self._create_wallet_service.create_regular_wallet(user, schema.key, schema.pin, schema.balance_currency, schema.strategy)
+            return self._create_wallet_service.create_regular_wallet(user, schema.key, schema.pin, schema.balance_currency, strategy)
         elif isinstance(schema, CreateForeignWalletSchema):
             return self._create_wallet_service.create_foreign_wallet(user, schema.key, schema.pin, schema.balance_currency)
 

@@ -21,7 +21,6 @@ class CreateRegularWalletSchema(BaseModel):
     key: WalletTypesEnum
     pin: str
     balance_currency: WalletBalanceCurrenciesEnum
-    strategy: WalletStrategy
 
     @field_validator('pin')
     @classmethod
