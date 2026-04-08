@@ -1,6 +1,5 @@
 import pytest
 
-from app.core.utils.general_funcs import get_hash
 from app.core.enums.user_enums import UserStatusesEnum
 from app.tests.users.conftest import user_registrations
 from app.users.domain import Client, Admin

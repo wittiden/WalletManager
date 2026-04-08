@@ -1,8 +1,6 @@
 import pytest
 
-from app.core.utils.general_funcs import get_hash
-from app.core.validations.exceptions import EmailFormatError, PasswordFormatError, \
-    NameFormatError, IsEmptyError
+from app.core.validations.exceptions import IsEmptyError
 from app.users.domain import Client, Admin
 
 
