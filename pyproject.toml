@@ -3,6 +3,7 @@ testpaths = ['app/tests']
 python_files = ['test_*.py']
 python_classes = ['Test*']
 python_functions = ['test_*']
+pythonpath = '.'
 
 addopts = '-q --disable-warnings --maxfail=1 --tb=short'
 
