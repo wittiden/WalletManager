@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 
 from app.core.validations.exceptions import ElementNotFoundError
+from app.core.validations.general_validations import GeneralValidation
 
 if TYPE_CHECKING:
     from app.wallets.domain import WalletBase
@@ -12,14 +13,14 @@ class WalletRepository:
     def __init__(self) -> None:
         self._wallets: dict[str, 'WalletBase'] = {}
 
-    def add_wallet(self, wallet: 'WalletBase') -> None:
-        self._wallets[wallet.item_id] = wallet
-
     def get_wallet(self, wallet_id: str) -> 'WalletBase':
-        return self._wallets.get(wallet_id)
+        return GeneralValidation.not_none_checker(self._wallets.get(wallet_id))
 
     def get_all_wallets(self) -> list['WalletBase']:
         return list(self._wallets.values())
+
+    def add_wallet(self, wallet: 'WalletBase') -> None:
+        self._wallets[wallet.item_id] = wallet
 
     def del_wallet(self, wallet_id: str) -> None:
         if not wallet_id in self._wallets.keys():
