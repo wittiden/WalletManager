@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING, ParamSpec
 
 from app.core.enums.user_enums import UserStatusesEnum
+from app.core.validations.general_validations import GeneralValidation
 
 if TYPE_CHECKING:
     from app.users.domain import UserBase
@@ -18,7 +19,7 @@ class UserRegistrations:
         self._user_registry_dict[key] = value
 
     def get_registration(self, key: 'UserStatusesEnum') -> type['UserBase']:
-        return self._user_registry_dict.get(key)
+        return GeneralValidation.not_none_checker(self._user_registry_dict.get(key))
 
     def get_all_registrations(self) -> dict['UserStatusesEnum', type['UserBase']]:
         return self._user_registry_dict

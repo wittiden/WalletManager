@@ -1,6 +1,7 @@
 from typing import ParamSpec, TYPE_CHECKING
 
 from app.core.enums.wallet_enums import WalletTypesEnum
+from app.core.validations.general_validations import GeneralValidation
 
 if TYPE_CHECKING:
     from app.wallets.domain import WalletBase
@@ -18,7 +19,7 @@ class WalletFactoryRegistry:
         self._registrations[key] = value
 
     def get_registration(self, key: 'WalletTypesEnum') -> type['WalletBase']:
-        return self._registrations.get(key)
+        return GeneralValidation.not_none_checker(self._registrations.get(key))
 
     def get_all_registrations(self) -> dict['WalletTypesEnum', type['WalletBase']]:
         return self._registrations
@@ -32,5 +33,4 @@ class WalletFactory:
 
     def create_wallet(self, key: 'WalletTypesEnum', *args: P.args, **kwargs: P.kwargs) -> 'WalletBase':
         class_type = self._wallet_factory_registry.get_registration(key)
-
         return class_type(*args, **kwargs)
