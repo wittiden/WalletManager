@@ -34,7 +34,7 @@ class WalletBase(MixinId):
 
         DomainInvariant.no_empty('pin', self._pin)
 
-        self._address: str = uuid.uuid4().hex[:16]
+        self._address: str = uuid.uuid4().hex[:26]
 
     @property
     def pin(self) -> str:
