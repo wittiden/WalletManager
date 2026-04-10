@@ -11,6 +11,7 @@ class AllParametersIsNoneError(Exception): pass
 class NameFormatError(Exception): pass
 class EmailFormatError(Exception): pass
 class PasswordFormatError(Exception): pass
+class AddressFormatError(Exception): pass
 
 class PinFormatError(Exception): pass
 
