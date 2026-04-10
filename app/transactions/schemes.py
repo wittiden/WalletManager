@@ -5,7 +5,7 @@ from app.core.enums.transaction_enums import TransactionStatusesEnum, Transactio
 from app.core.validations.exceptions import AddressFormatError
 
 
-class CreateTransactionService(BaseModel):
+class CreateTransactionScheme(BaseModel):
     from_address: str
     to_address: str
     completed_at: datetime
