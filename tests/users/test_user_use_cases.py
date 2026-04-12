@@ -1,10 +1,9 @@
 import pytest
 
-from app.core.enums.user_enums import UserStatusesEnum
-from app.core.utils.general_funcs import get_hash
-from app.core.validations.exceptions import EmailValueExistsError, EmailValueNotExistsError, \
-    PasswordValueNotExistsError, UserIsBlockedError, UserIsNotAdminError, AllParametersIsNoneError, IsNoneError, \
-    UserIsNotBlockedError
+from app.common.enums.user_enums import UserStatusesEnum
+from app.core.exceptions import EmailValueExistsError, EmailValueNotExistsError, PasswordValueNotExistsError, \
+    UserIsBlockedError, UserIsNotAdminError, AllParametersIsNoneError, IsNoneError, UserIsNotBlockedError
+from app.core.utils import get_hash
 
 
 @pytest.mark.unit

@@ -3,8 +3,8 @@ from bs4 import BeautifulSoup
 import fake_useragent
 from aenum import extend_enum
 
-from app.core.enums.wallet_enums import WalletBalanceCurrenciesEnum
-from app.core.validations.exceptions import WebElementNotFoundError
+from app.common.enums.wallet_enums import WalletBalanceCurrenciesEnum
+from app.core.exceptions import WebElementNotFoundError
 
 
 def start_currencies_parser() -> list:

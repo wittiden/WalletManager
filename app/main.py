@@ -1,14 +1,14 @@
+from app.core.logger import add_logger
+from app.parsers.currencies_parser import start_currencies_parser
 from app.users.domain import Admin, Client
 from app.users.factory import UserFactory, UserRegistrations
 from app.users.use_cases import UserServiceFacade, CreateUserService, LoginUserService, SortUserService, ShowUserService, BlockUserService
-from app.core.utils.logger_settings import add_logger
-from app.core.utils.currencies_parser import start_currencies_parser
-from app.core.enums.user_enums import UserStatusesEnum
-from app.users.repository import UserRepository
+from app.common.enums.user_enums import UserStatusesEnum
+from app.users.repository.repository import UserRepository
 from app.wallets.domain import RegularWallet, ForeignWallet
 from app.wallets.factory import WalletFactory, WalletFactoryRegistry
-from app.wallets.repository import WalletRepository
-from app.core.enums.wallet_enums import WalletTypesEnum
+from app.wallets.repository.repository import WalletRepository
+from app.common.enums.wallet_enums import WalletTypesEnum
 from app.wallets.use_cases import CreateWalletService, ShowWalletService, SortWalletService, BlockWalletService, CloseWalletService, WalletServiceFacade, WalletOperationsFacade, WithdrawWalletOperationService, DepositWalletOperationService, ExchangeWalletOperationService
 
 

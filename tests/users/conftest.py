@@ -1,8 +1,8 @@
 import pytest
 from app.users.factory import UserFactory, UserRegistrations
-from app.core.enums.user_enums import UserStatusesEnum
+from app.common.enums.user_enums import UserStatusesEnum
 from app.users.domain import Admin, Client
-from app.users.repository import UserRepository
+from app.users.repository.repository import UserRepository
 from app.users.use_cases import UserServiceFacade, CreateUserService, LoginUserService, SortUserService, ShowUserService, BlockUserService
 
 

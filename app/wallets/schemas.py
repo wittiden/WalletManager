@@ -1,8 +1,7 @@
 from pydantic import BaseModel, field_validator
 
-from app.core.enums.wallet_enums import WalletBalanceCurrenciesEnum, WalletTypesEnum
-from app.core.validations.exceptions import PinFormatError
-from app.wallets.strategy import WalletStrategy
+from app.common.enums.wallet_enums import WalletBalanceCurrenciesEnum, WalletTypesEnum
+from app.core.exceptions import PinFormatError
 
 
 def validate_pin(pin: str) -> str:

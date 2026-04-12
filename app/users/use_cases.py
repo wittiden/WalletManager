@@ -1,17 +1,17 @@
 from typing import TYPE_CHECKING
 
-from app.core.utils.decorators import debug_log, info_log
-from app.core.enums.user_enums import UserStatusesEnum
-from app.core.utils.general_funcs import get_hash
-from app.core.validations.exceptions import EmailValueExistsError, PasswordValueNotExistsError, \
-    UserIsBlockedError, EmailValueNotExistsError, AllParametersIsNoneError, UserIsNotBlockedError
-from app.core.validations.general_validations import UseCasesValidation, GeneralValidation
-from app.users.schemes import CreateUserSchema, LoginUserSchema
+from app.common.enums.user_enums import UserStatusesEnum
+from app.core.decorators import debug_log, info_log
+from app.core.exceptions import EmailValueExistsError, PasswordValueNotExistsError, UserIsBlockedError, \
+    EmailValueNotExistsError, AllParametersIsNoneError, UserIsNotBlockedError
+from app.core.utils import get_hash
+from app.core.validations import GeneralValidation, UseCasesValidation
+from app.users.schemas import CreateUserSchema, LoginUserSchema
 
 if TYPE_CHECKING:
     from app.users.domain import UserBase
     from app.users.factory import UserFactory
-    from app.users.repository import UserRepository
+    from app.users.repository.repository import UserRepository
 
 
 class UserServiceFacade:

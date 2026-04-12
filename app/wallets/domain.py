@@ -4,11 +4,11 @@ from decimal import Decimal
 from typing import TYPE_CHECKING, ParamSpec
 from blinker import Signal
 
-from app.core.enums.wallet_enums import WalletBalanceCurrenciesEnum
-from app.core.enums.wallet_enums import WalletTypesEnum
-from app.core.utils.general_funcs import blink_func
-from app.core.utils.mixins import MixinId
-from app.core.validations.invariants import DomainInvariant
+from app.common.enums.wallet_enums import WalletBalanceCurrenciesEnum
+from app.common.enums.wallet_enums import WalletTypesEnum
+from app.common.mixins import MixinId
+from app.core.invariants import DomainInvariant
+from app.core.utils import blink_func
 
 if TYPE_CHECKING:
     from app.users.domain import UserBase

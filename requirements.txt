@@ -6,6 +6,7 @@ ruff~=0.15.8
 
 #validation
 pydantic~=2.12.5
+pydantic-settings~=2.13.1
 
 #observer
 blinker~=1.9.0
@@ -22,3 +23,11 @@ beautifulsoup4~=4.12.3
 requests~=2.33.1
 fake-useragent~=2.2.0
 lxml~=6.0.2
+
+#database
+sqlalchemy~=2.0.49
+asyncpg~=0.31.0
+psycopg~=3.3.3
+
+#migration
+alembic~=1.18.4

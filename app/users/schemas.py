@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr, field_validator
 
-from app.core.enums.user_enums import UserStatusesEnum
-from app.core.validations.exceptions import NameFormatError, PasswordFormatError
+from app.common.enums.user_enums import UserStatusesEnum
+from app.core.exceptions import PasswordFormatError, NameFormatError
 
 
 def validate_password(password: str) -> str:

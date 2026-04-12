@@ -2,10 +2,10 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 from blinker import Signal
 
-from app.core.enums.user_enums import UserStatusesEnum
-from app.core.utils.general_funcs import blink_func
-from app.core.utils.mixins import MixinId
-from app.core.validations.invariants import DomainInvariant
+from app.common.enums.user_enums import UserStatusesEnum
+from app.common.mixins import MixinId
+from app.core.invariants import DomainInvariant
+from app.core.utils import blink_func
 
 if TYPE_CHECKING:
     from app.wallets.domain import WalletBase

@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
-from app.core.validations.exceptions import ElementNotFoundError
-from app.core.validations.general_validations import GeneralValidation
+from app.core.exceptions import ElementNotFoundError
+from app.core.validations import GeneralValidation
 
 if TYPE_CHECKING:
     from app.transactions.domain import TransactionBase

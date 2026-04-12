@@ -1,6 +1,6 @@
 import pytest
 
-from app.core.validations.exceptions import IsEmptyError
+from app.core.exceptions import IsEmptyError
 from app.users.domain import Client, Admin
 
 

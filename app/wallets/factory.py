@@ -1,7 +1,7 @@
 from typing import ParamSpec, TYPE_CHECKING
 
-from app.core.enums.wallet_enums import WalletTypesEnum
-from app.core.validations.general_validations import GeneralValidation
+from app.common.enums.wallet_enums import WalletTypesEnum
+from app.core.validations import GeneralValidation
 
 if TYPE_CHECKING:
     from app.wallets.domain import WalletBase

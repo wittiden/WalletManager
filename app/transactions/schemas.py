@@ -1,8 +1,8 @@
 from datetime import datetime
 from pydantic import BaseModel, field_validator
 
-from app.core.enums.transaction_enums import TransactionStatusesEnum, TransactionTypesEnum
-from app.core.validations.exceptions import AddressFormatError
+from app.common.enums.transaction_enums import TransactionStatusesEnum, TransactionTypesEnum
+from app.core.exceptions import AddressFormatError
 
 
 class CreateTransactionScheme(BaseModel):

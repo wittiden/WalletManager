@@ -1,6 +1,6 @@
 from typing import Any
 
-from app.core.validations.exceptions import IsEmptyError, IsNoneError, IsInstanceError
+from app.core.exceptions import IsEmptyError, IsNoneError, IsInstanceError
 
 
 class DomainInvariant:

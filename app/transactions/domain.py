@@ -3,10 +3,10 @@ from datetime import datetime
 from decimal import Decimal
 from blinker import Signal
 
-from app.core.enums.transaction_enums import TransactionStatusesEnum, TransactionTypesEnum
-from app.core.enums.wallet_enums import WalletBalanceCurrenciesEnum
-from app.core.utils.mixins import MixinId
-from app.core.utils.general_funcs import blink_func
+from app.common.enums.transaction_enums import TransactionStatusesEnum, TransactionTypesEnum
+from app.common.enums.wallet_enums import WalletBalanceCurrenciesEnum
+from app.common.mixins import MixinId
+from app.core.utils import blink_func
 
 transaction_update_signal = Signal()
 transaction_update_signal.connect(blink_func)

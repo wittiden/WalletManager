@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, ParamSpec
 
-from app.core.enums.transaction_enums import TransactionTypesEnum
-from app.core.validations.general_validations import GeneralValidation
+from app.common.enums.transaction_enums import TransactionTypesEnum
+from app.core.validations import GeneralValidation
 
 if TYPE_CHECKING:
     from app.transactions.domain import TransactionBase

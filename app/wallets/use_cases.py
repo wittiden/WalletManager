@@ -1,18 +1,18 @@
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
-from app.core.enums.wallet_enums import WalletTypesEnum, WalletBalanceCurrenciesEnum
-from app.core.utils.general_funcs import get_hash
-from app.core.validations.exceptions import WalletIsBlockedError, WalletIsNotBlockedError, WalletIsNotClose, \
-    AllParametersIsNoneError, UnknownWalletTypeError
-from app.core.validations.general_validations import UseCasesValidation, GeneralValidation
+from app.common.enums.wallet_enums import WalletTypesEnum, WalletBalanceCurrenciesEnum
+from app.core.decorators import debug_log, info_log
+from app.core.exceptions import UnknownWalletTypeError, WalletIsBlockedError, WalletIsNotBlockedError, WalletIsNotClose, \
+    AllParametersIsNoneError
+from app.core.utils import get_hash
+from app.core.validations import UseCasesValidation, GeneralValidation
 from app.wallets.domain import WalletBase
-from app.core.utils.decorators import debug_log, info_log
 from app.wallets.schemas import CreateRegularWalletSchema, CreateForeignWalletSchema, CloseWalletSchema
 
 if TYPE_CHECKING:
     from app.users.domain import UserBase
     from app.wallets.factory import WalletFactory
-    from app.wallets.repository import WalletRepository
+    from app.wallets.repository.repository import WalletRepository
     from app.wallets.strategy import WalletStrategy
 
 
@@ -38,7 +38,7 @@ class WalletServiceFacade:
 
     @debug_log
     @info_log(['Информация о кошельке:',''])
-    def show_wallet(self, user: 'UserBase', find_wallet_id: str) -> WalletBase:
+    def show_wallet(self, user: 'UserBase', find_wallet_id: str) -> 'WalletBase':
         return self._show_wallet_service.show_wallet(user, find_wallet_id)
 
     @debug_log
