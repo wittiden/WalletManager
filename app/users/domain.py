@@ -21,7 +21,7 @@ class UserBase(MixinId):
     _name: str
     _email: str
     _password: str
-    _is_blocked: bool = field(default=False, init=False)
+    _is_blocked: bool = field(default=False)
     _status: 'UserStatusesEnum' = field(default=UserStatusesEnum.UNKNOWN, init=False)
 
     def __post_init__(self) -> None:
@@ -78,11 +78,12 @@ class UserBase(MixinId):
 
     __str__ = __repr__
 
+
 @dataclass
 class Client(UserBase):
     """Датакласс для хранения данных клиента"""
 
-    _wallets: list['WalletBase'] = field(default_factory=list, init=False)
+    _wallets: list['WalletBase'] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         super().__post_init__()
@@ -92,6 +93,10 @@ class Client(UserBase):
     @property
     def wallets(self) -> list['WalletBase']:
         return self._wallets
+
+    @wallets.setter
+    def wallets(self, value: list['WalletBase']) -> None:
+        self._wallets = value
 
     def __repr__(self) -> str:
         return f'{super().__repr__()}\nWallets:\n{[f'{wallet}\n' for wallet in self._wallets]}\n'

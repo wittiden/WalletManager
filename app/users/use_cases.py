@@ -1,17 +1,18 @@
 from typing import TYPE_CHECKING
+from sqlalchemy.exc import IntegrityError
 
 from app.common.enums.user_enums import UserStatusesEnum
 from app.core.decorators import debug_log, info_log
-from app.core.exceptions import EmailValueExistsError, PasswordValueNotExistsError, UserIsBlockedError, \
-    EmailValueNotExistsError, AllParametersIsNoneError, UserIsNotBlockedError
+from app.core.exceptions import UserIsBlockedError, UserIsNotBlockedError
 from app.core.utils import get_hash
 from app.core.validations import GeneralValidation, UseCasesValidation
-from app.users.schemas import CreateUserSchema, LoginUserSchema
 
 if TYPE_CHECKING:
     from app.users.domain import UserBase
     from app.users.factory import UserFactory
-    from app.users.repository.repository import UserRepository
+    from app.users.repository.commands import UserCommandsRepository
+    from app.users.repository.queries import UserQueriesRepository
+    from app.users.schemas import CreateUserSchema, LoginUserSchema
 
 
 class UserServiceFacade:
@@ -35,12 +36,6 @@ class UserServiceFacade:
         return self._login_user_service.login_user(schema.email, schema.password)
 
     @debug_log
-    @info_log(['', 'Пользователь создан и вход выполнен'])
-    def create_and_login_user(self, schema: 'CreateUserSchema') -> 'UserBase':
-        self.create_user(schema)
-        return self.login_user(schema)
-
-    @debug_log
     @info_log(['Информация о пользователе:', ''])
     def show_user(self, user: 'UserBase', find_user_id: str) -> 'UserBase':
         return self._show_user_service.show_user(user, find_user_id)
@@ -57,8 +52,8 @@ class UserServiceFacade:
 
     @debug_log
     @info_log(['Сортировка пользователей:', ''])
-    def sort_users(self, user: 'UserBase', item_id: bool = None, name: bool = None, email: bool = None, password: bool = None, is_blocked: bool = None) -> list:
-        return self._sort_user_service.sort_users(user, item_id, name, email, password, is_blocked)
+    def sort_users(self, user: 'UserBase', order_by_param: str) -> list:
+        return self._sort_user_service.sort_users(user, order_by_param)
 
     @debug_log
     @info_log(['', 'Пользователь заблокирован'])
@@ -74,98 +69,91 @@ class UserServiceFacade:
 class CreateUserService:
     """Сервис класс по созданию пользователя"""
 
-    def __init__(self, repository: 'UserRepository', user_factory: 'UserFactory') -> None:
-        self._repository = repository
+    def __init__(self, user_factory: 'UserFactory', user_commands_repository: 'UserCommandsRepository') -> None:
         self._user_factory = user_factory
+        self._user_commands_repository = user_commands_repository
 
     def create_user(self, key: 'UserStatusesEnum', name: str, email: str, password: str) -> 'UserBase':
-        for user in self._repository.get_all_users():
-            if user.email == email:
-                raise EmailValueExistsError
-
         user = self._user_factory.create_user(key, name, email, get_hash(password))
         GeneralValidation.not_none_checker(user)
 
-        self._repository.add_user(user)
+        try:
+            self._user_commands_repository.insert_user_info(user)
+        except IntegrityError:
+            raise
+
         return user
 
 
 class LoginUserService:
     """Сервис класс для входа в аккаунт"""
 
-    def __init__(self, repository: 'UserRepository') -> None:
-        self._repository = repository
+    def __init__(self, user_queries_repository: 'UserQueriesRepository') -> None:
+        self._user_queries_repository = user_queries_repository
 
     def login_user(self, email: str, password: str) -> 'UserBase':
-        for user in self._repository.get_all_users():
-            if user.email == email:
-                if user.password != get_hash(password):
-                    raise PasswordValueNotExistsError
-                if user.is_blocked:
-                    raise UserIsBlockedError
-                return user
+        user = self._user_queries_repository.select_user_for_login(email, get_hash(password))
+        GeneralValidation.not_none_checker(user)
 
-        raise EmailValueNotExistsError
+        if user.is_blocked:
+            raise UserIsBlockedError
+
+        return user
 
 
 class ShowUserService:
     """Сервис класс для вывода информации о пользователе"""
 
-    def __init__(self, repository: 'UserRepository') -> None:
-        self._repository = repository
+    def __init__(self, user_queries_repository: 'UserQueriesRepository') -> None:
+        self._user_queries_repository = user_queries_repository
 
     def show_user(self, user: 'UserBase', find_user_id: str) -> 'UserBase':
         UseCasesValidation.is_admin_checker(user)
 
-        return GeneralValidation.not_none_checker(self._repository.get_user(find_user_id))
+        return GeneralValidation.not_none_checker(self._user_queries_repository.select_user(find_user_id))
 
     def show_all_users(self, user: 'UserBase') -> list[UserBase]:
         UseCasesValidation.is_admin_checker(user)
 
-        return GeneralValidation.not_none_checker(self._repository.get_all_users())
+        return self._user_queries_repository.select_all_users()
 
     def show_my_user(self, user: 'UserBase') -> 'UserBase':
-        return GeneralValidation.not_none_checker(self._repository.get_user(user.item_id))
+        return GeneralValidation.not_none_checker(self._user_queries_repository.select_my_user(user))
 
 
 class SortUserService:
     """Сервис класс для сортировки данных пользователя"""
 
-    def __init__(self, repository: 'UserRepository') -> None:
-        self._repository = repository
+    def __init__(self, user_queries_repository: 'UserQueriesRepository') -> None:
+        self._user_queries_repository = user_queries_repository
 
-    def sort_users(self, user: 'UserBase', item_id: bool = None, name: bool = None, email: bool = None, password: bool = None, is_blocked: bool = None) -> list['UserBase']:
+    def sort_users(self, user: 'UserBase', order_by_param: str) -> list['UserBase']:
         UseCasesValidation.is_admin_checker(user)
 
-        all_users = GeneralValidation.not_none_checker(self._repository.get_all_users())
-
-        attrib_dict: dict[str, bool] = {'item_id': item_id, 'name': name, 'email': email, 'password': password, 'is_blocked': is_blocked}
-        for key, value in attrib_dict.items():
-            if value:
-                sorted_result: list['UserBase'] = sorted(all_users, key=lambda r : getattr(r, key))
-                return sorted_result
-
-        raise AllParametersIsNoneError
+        return self._user_queries_repository.select_order_by_users(order_by_param)
 
 
 class BlockUserService:
     """Сервис класс для блокировки и разблокировки пользователя"""
 
-    def __init__(self, repository: 'UserRepository') -> None:
-        self._repository = repository
+    def __init__(self, user_queries_repository: 'UserQueriesRepository', user_commands_repository: 'UserCommandsRepository') -> None:
+        self._user_queries_repository = user_queries_repository
+        self._user_commands_repository = user_commands_repository
 
     def block_user(self, user: 'UserBase', find_user_id: str) -> None:
         UseCasesValidation.is_admin_checker(user)
 
-        find_user = GeneralValidation.not_none_checker(self._repository.get_user(find_user_id))
+        find_user = GeneralValidation.not_none_checker(self._user_queries_repository.select_user(find_user_id))
         if find_user.is_blocked:
             raise UserIsBlockedError
-        find_user.is_blocked = True
+
+        self._user_commands_repository.update_user_info(find_user, {'is_blocked': True})
 
     def unblock_user(self, user: 'UserBase', find_user_id: str) -> None:
         UseCasesValidation.is_admin_checker(user)
 
-        find_user = GeneralValidation.not_none_checker(self._repository.get_user(find_user_id))
+        find_user = GeneralValidation.not_none_checker(self._user_queries_repository.select_user(find_user_id))
         if not find_user.is_blocked:
             raise UserIsNotBlockedError
-        find_user.is_blocked = False
+
+        self._user_commands_repository.update_user_info(find_user, {'is_blocked': False})

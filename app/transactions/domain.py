@@ -20,7 +20,7 @@ class TransactionBase(MixinId):
     _to_address: str
     _completed_at: datetime
     _amount: Decimal
-    _operation_status: 'TransactionStatusesEnum' = field(default=TransactionStatusesEnum.UNKNOWN, init=False)
+    _operation_status: 'TransactionStatusesEnum'
     _operation_type: 'TransactionTypesEnum' = field(default=TransactionTypesEnum.UNKNOWN, init=False)
 
     def __post_init__(self) -> None:
@@ -74,10 +74,17 @@ class TransactionBase(MixinId):
         self._amount = value
         transaction_update_signal.send(self, field='amount', old=old_value, new=value)
 
+    @operation_status.setter
+    def operation_status(self, value: 'TransactionStatusesEnum') -> None:
+        old_value = self._operation_status
+        self._operation_status = value
+        transaction_update_signal.send(self, feild='operation_status', old=old_value, new=value)
+
     def __repr__(self) -> str:
         return f'#{self.item_id} -> {self._operation_type}\nStatus: {self._operation_status}, from_address: {self._from_address}, to_address: {self._to_address}, amount: {self._amount}, completed_at: {self._completed_at}'
 
     __str__ = __repr__
+
 
 @dataclass
 class DepositTransaction(TransactionBase):

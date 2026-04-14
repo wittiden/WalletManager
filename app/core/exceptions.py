@@ -23,7 +23,3 @@ class WebElementNotFoundError(Exception): pass
 
 class WalletIsBlockedError(Exception): pass
 class WalletIsNotBlockedError(Exception): pass
-class WalletIsNotClose(Exception): pass
-
-class ElementNotFoundError(Exception): pass
-class UnknownWalletTypeError(Exception): pass

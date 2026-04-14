@@ -2,18 +2,17 @@ from typing import TYPE_CHECKING
 
 from app.common.enums.wallet_enums import WalletTypesEnum, WalletBalanceCurrenciesEnum
 from app.core.decorators import debug_log, info_log
-from app.core.exceptions import UnknownWalletTypeError, WalletIsBlockedError, WalletIsNotBlockedError, WalletIsNotClose, \
-    AllParametersIsNoneError
+from app.core.exceptions import WalletIsBlockedError, WalletIsNotBlockedError
 from app.core.utils import get_hash
 from app.core.validations import UseCasesValidation, GeneralValidation
-from app.wallets.domain import WalletBase
-from app.wallets.schemas import CreateRegularWalletSchema, CreateForeignWalletSchema, CloseWalletSchema
 
 if TYPE_CHECKING:
     from app.users.domain import UserBase
     from app.wallets.factory import WalletFactory
-    from app.wallets.repository.repository import WalletRepository
-    from app.wallets.strategy import WalletStrategy
+    from app.wallets.schemas import CreateRegularWalletSchema, CreateForeignWalletSchema, CloseWalletSchema
+    from app.wallets.repository.commands import WalletCommandsRepository
+    from app.wallets.repository.queries import WalletQueriesRepository
+    from app.wallets.domain import WalletBase
 
 
 class WalletServiceFacade:
@@ -28,13 +27,8 @@ class WalletServiceFacade:
 
     @debug_log
     @info_log(['','Пользователь создан'])
-    def create_wallet(self, user: 'UserBase', schema: 'CreateRegularWalletSchema | CreateForeignWalletSchema', strategy: 'WalletStrategy' = None) -> 'WalletBase':
-        if isinstance(schema, CreateRegularWalletSchema):
-            return self._create_wallet_service.create_regular_wallet(user, schema.key, schema.pin, schema.balance_currency, strategy)
-        elif isinstance(schema, CreateForeignWalletSchema):
-            return self._create_wallet_service.create_foreign_wallet(user, schema.key, schema.pin, schema.balance_currency)
-
-        raise UnknownWalletTypeError
+    def create_wallet(self, user: 'UserBase', schema: 'CreateRegularWalletSchema | CreateForeignWalletSchema') -> 'WalletBase':
+        return self._create_wallet_service.create_regular_wallet(user, schema.key, schema.pin, schema.balance_currency)
 
     @debug_log
     @info_log(['Информация о кошельке:',''])
@@ -53,8 +47,13 @@ class WalletServiceFacade:
 
     @debug_log
     @info_log(['Отсортированные кошельки:',''])
-    def sort_wallets(self, user: 'UserBase', is_blocked: bool = None, owner: bool = None, status: bool = None, address: bool = None) -> list['WalletBase']:
-        return self._sort_wallet_service.sort_wallets(user, is_blocked, owner, status, address)
+    def sort_all_wallets(self, user: 'UserBase', order_by_param: str) -> list['WalletBase']:
+        return self._sort_wallet_service.sort_all_wallets(user, order_by_param)
+
+    @debug_log
+    @info_log(['Ваши отсортированные кошельки:',''])
+    def sort_my_wallets(self, user: 'UserBase', order_by_param: str) -> list['WalletBase']:
+        return self._sort_wallet_service.sort_my_wallets(user, order_by_param)
 
     @debug_log
     @info_log(['','Кошелек заблокирован'])
@@ -75,128 +74,113 @@ class WalletServiceFacade:
 class CreateWalletService:
     """Класс сервис по созданию кошельков"""
 
-    def __init__(self, wallet_repository: 'WalletRepository', wallet_factory: 'WalletFactory') -> None:
-        self._wallet_repository = wallet_repository
+    def __init__(self, wallet_factory: 'WalletFactory', wallet_commands_repository: 'WalletCommandsRepository') -> None:
         self._wallet_factory = wallet_factory
+        self._wallet_commands_repository = wallet_commands_repository
 
-    def create_regular_wallet(self, user: 'UserBase', key: 'WalletTypesEnum', pin: str, balance_currency: 'WalletBalanceCurrenciesEnum', strategy: 'WalletStrategy') -> 'WalletBase':
+    def create_regular_wallet(self, user: 'UserBase', key: 'WalletTypesEnum', pin: str, balance_currency: 'WalletBalanceCurrenciesEnum') -> 'WalletBase':
         UseCasesValidation.is_client_checker(user)
 
-        wallet = self._wallet_factory.create_wallet(key, get_hash(pin), balance_currency, strategy)
+        obj = self._wallet_factory.create_wallet(key, get_hash(pin), balance_currency)
+        GeneralValidation.not_none_checker(obj)
 
-        GeneralValidation.not_none_checker(wallet)
+        self._wallet_commands_repository.insert_wallet_info(obj)
 
-        user._wallets.append(wallet)
-        wallet.owner = user
-        self._wallet_repository.add_wallet(wallet)
-
-        return wallet
+        return obj
 
     def create_foreign_wallet(self, user: 'UserBase', key: 'WalletTypesEnum', pin: str, balance_currency: list['WalletBalanceCurrenciesEnum']) -> 'WalletBase':
         UseCasesValidation.is_client_checker(user)
 
-        wallet = self._wallet_factory.create_wallet(key, get_hash(pin), balance_currency)
+        obj = self._wallet_factory.create_wallet(key, get_hash(pin), balance_currency)
+        GeneralValidation.not_none_checker(obj)
 
-        GeneralValidation.not_none_checker(wallet)
+        self._wallet_commands_repository.insert_wallet_info(obj)
 
-        user._wallets.append(wallet)
-        wallet.owner = user
-        self._wallet_repository.add_wallet(wallet)
-
-        return wallet
+        return obj
 
 
 class ShowWalletService:
     """Класс сервис для вывода информации о кошельках"""
 
-    def __init__(self, wallet_repository: 'WalletRepository') -> None:
-        self._wallet_repository = wallet_repository
+    def __init__(self, wallet_queries_repository: 'WalletQueriesRepository') -> None:
+        self._wallet_queries_repository = wallet_queries_repository
 
     def show_all_wallets(self, user: 'UserBase') -> list['WalletBase']:
         UseCasesValidation.is_admin_checker(user)
 
-        return GeneralValidation.not_none_checker(self._wallet_repository.get_all_wallets())
+        return self._wallet_queries_repository.select_all_wallets()
 
-    @staticmethod
-    def show_my_wallets(user: 'UserBase') -> list['WalletBase']:
+    def show_my_wallets(self, user: 'UserBase') -> list['WalletBase']:
         UseCasesValidation.is_client_checker(user)
 
-        return [GeneralValidation.not_none_checker(wallet) for wallet in user.wallets]
+        return self._wallet_queries_repository.select_my_wallets(user)
 
     def show_wallet(self, user: 'UserBase', find_wallet_id: str) -> 'WalletBase':
         UseCasesValidation.is_admin_checker(user)
 
-        return GeneralValidation.not_none_checker(self._wallet_repository.get_wallet(find_wallet_id))
-
-
-class BlockWalletService:
-    """Класс сервис по блокировке или разблокировке кошельков"""
-
-    def __init__(self, wallet_repository: 'WalletRepository') -> None:
-        self._wallet_repository = wallet_repository
-
-    def block_wallet(self, user: 'UserBase', find_wallet_id: str) -> None:
-        UseCasesValidation.is_admin_checker(user)
-
-        find_wallet = GeneralValidation.not_none_checker(self._wallet_repository.get_wallet(find_wallet_id))
-
-        if find_wallet.is_blocked:
-            raise WalletIsBlockedError
-
-        find_wallet.is_blocked = True
-
-    def unblock_wallet(self, user: 'UserBase', find_wallet_id: str) -> None:
-        UseCasesValidation.is_admin_checker(user)
-
-        find_wallet = GeneralValidation.not_none_checker(self._wallet_repository.get_wallet(find_wallet_id))
-
-        if not find_wallet.is_blocked:
-            raise WalletIsNotBlockedError
-
-        find_wallet.is_blocked = False
-
-
-class CloseWalletService:
-    """Класс сервис по закрытию кошельков"""
-
-    def __init__(self, wallet_repository: 'WalletRepository') -> None:
-        self._wallet_repository = wallet_repository
-
-    def close_my_wallet(self, user: 'UserBase', wallet_id: str, pin: str):
-        UseCasesValidation.is_client_checker(user)
-
-        my_wallet = self._wallet_repository.get_wallet(wallet_id)
-
-        if not my_wallet.owner.item_id == user.item_id:
-            raise WalletIsNotClose
-
-        if get_hash(pin) != my_wallet.pin:
-            raise WalletIsNotClose
-
-        self._wallet_repository.del_wallet(my_wallet.item_id)
-        user.wallets.remove(my_wallet)
+        return GeneralValidation.not_none_checker(self._wallet_queries_repository.select_wallet(find_wallet_id))
 
 
 class SortWalletService:
     """Класс сервис по сортировке кошельков"""
 
-    def __init__(self, wallet_repository: 'WalletRepository') -> None:
-        self._wallet_repository = wallet_repository
+    def __init__(self, wallet_queries_repository: 'WalletQueriesRepository') -> None:
+        self._wallet_queries_repository = wallet_queries_repository
 
-    def sort_wallets(self, user: 'UserBase', is_blocked: bool = None, owner: bool = None, status: bool = None, address: bool = None):
+    def sort_all_wallets(self, user: 'UserBase', order_by_param: str) -> list['WalletBase']:
         UseCasesValidation.is_admin_checker(user)
 
-        all_wallets = self._wallet_repository.get_all_wallets()
+        return self._wallet_queries_repository.select_order_by_wallets(order_by_param)
 
-        param_dict = {'is_blocked': is_blocked, 'owner': owner, 'status': status, 'address': address}
-        for key, value in param_dict.items():
-            if value:
-                return sorted(all_wallets, key=lambda r : getattr(r, key))
+    def sort_my_wallets(self, user: 'UserBase', order_by_param: str) -> list['WalletBase']:
+        UseCasesValidation.is_client_checker(user)
 
-        raise AllParametersIsNoneError
+        return self._wallet_queries_repository.select_order_by_my_wallets(user, order_by_param)
 
 
-class WalletOperationsFacade:
+class BlockWalletService:
+    """Класс сервис по блокировке или разблокировке кошельков"""
+
+    def __init__(self, wallet_commands_repository: 'WalletCommandsRepository', wallet_queries_repository: 'WalletQueriesRepository') -> None:
+        self._wallet_commands_repository = wallet_commands_repository
+        self._wallet_queries_repository = wallet_queries_repository
+
+    def block_wallet(self, user: 'UserBase', find_wallet_id: str) -> None:
+        UseCasesValidation.is_admin_checker(user)
+
+        obj = GeneralValidation.not_none_checker(self._wallet_queries_repository.select_wallet(find_wallet_id))
+
+        if obj.is_blocked:
+            raise WalletIsBlockedError
+
+        self._wallet_commands_repository.update_wallet_info(obj,{'is_blocked': True})
+
+    def unblock_wallet(self, user: 'UserBase', find_wallet_id: str) -> None:
+        UseCasesValidation.is_admin_checker(user)
+
+        obj = GeneralValidation.not_none_checker(self._wallet_queries_repository.select_wallet(find_wallet_id))
+
+        if not obj.is_blocked:
+            raise WalletIsNotBlockedError
+
+        self._wallet_commands_repository.update_wallet_info(obj,{'is_blocked': False})
+
+
+class CloseWalletService:
+    """Класс сервис по закрытию кошельков"""
+
+    def __init__(self, wallet_commands_repository: 'WalletCommandsRepository', wallet_queries_repository: 'WalletQueriesRepository') -> None:
+        self._wallet_commands_repository = wallet_commands_repository
+        self._wallet_queries_repository = wallet_queries_repository
+
+    def close_my_wallet(self, user: 'UserBase', find_wallet_id: str, pin: str):
+        UseCasesValidation.is_client_checker(user)
+
+        obj = GeneralValidation.not_none_checker(self._wallet_queries_repository.select_for_close(find_wallet_id, get_hash(pin)))
+        self._wallet_commands_repository.delete_wallet_info(obj)
+
+
+class WalletOperationsServiceFacade:
     """Класс фасад для управления операциями кошельков"""
 
     def __init__(self, deposit_wallet_operation_service: 'DepositWalletOperationService', withdraw_wallet_operation_service: 'WithdrawWalletOperationService', exchange_wallet_operation_service: 'ExchangeWalletOperationService') -> None:

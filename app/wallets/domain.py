@@ -12,7 +12,6 @@ from app.core.utils import blink_func
 
 if TYPE_CHECKING:
     from app.users.domain import UserBase
-    from app.wallets.strategy import WalletStrategy
 
 P = ParamSpec('P')
 
@@ -83,12 +82,10 @@ class RegularWallet(WalletBase):
     """Класс для хранения данных обычного кошелька"""
 
     _regular_balance_currency: 'WalletBalanceCurrenciesEnum'
-    _strategy: 'WalletStrategy'
 
     def __post_init__(self) -> None:
         super().__post_init__()
 
-        DomainInvariant.no_none('strategy', self._strategy)
         DomainInvariant.is_instance('regular_balance_currency', self._regular_balance_currency, WalletBalanceCurrenciesEnum)
 
         self._balance: dict[str, Decimal] = {self._regular_balance_currency.name: Decimal('0.00')}
@@ -102,18 +99,12 @@ class RegularWallet(WalletBase):
     def balance(self) -> dict[str, Decimal]:
         return self._balance
 
-    @property
-    def strategy(self) -> 'WalletStrategy':
-        return self._strategy
-
-    @strategy.setter
-    def strategy(self, value: 'WalletStrategy') -> None:
-        old_value = self._strategy
-        self._strategy = DomainInvariant.no_none('strategy', value)
-        wallet_upgrade_signal.send(self, field='strategy', old=old_value, new=value)
+    @balance_currency.setter
+    def balance_currency(self, value: 'WalletBalanceCurrenciesEnum') -> None:
+        self._regular_balance_currency = value
 
     def __repr__(self) -> str:
-        return f'{super().__repr__()}\nStrategy: {type(self._strategy).__name__}\nBalance: {self._balance}'
+        return f'{super().__repr__()}\nBalance: {self._balance}'
 
     __str__ = __repr__
 
@@ -133,8 +124,16 @@ class ForeignWallet(WalletBase):
         self._status = WalletTypesEnum.FOREIGN
 
     @property
+    def foreign_balance_currencies(self) -> list['WalletBalanceCurrenciesEnum']:
+        return self._foreign_balance_currencies
+
+    @property
     def balance(self) -> dict[str, Decimal]:
         return self._balance
+
+    @foreign_balance_currencies.setter
+    def foreign_balance_currencies(self, value: list['WalletBalanceCurrenciesEnum']) -> None:
+        self._foreign_balance_currencies = value
 
     def __repr__(self) -> str:
         return f'{super().__repr__()}\nBalance: {self._balance}'

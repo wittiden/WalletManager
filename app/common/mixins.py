@@ -10,3 +10,7 @@ class MixinId:
     @property
     def item_id(self) -> str:
         return self._item_id
+
+    @item_id.setter
+    def item_id(self, value: str) -> None:
+        self._item_id = value
