@@ -1,4 +1,6 @@
 from typing import TYPE_CHECKING
+
+from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
 
 if TYPE_CHECKING:
@@ -18,7 +20,8 @@ class WalletQueriesRepository:
         pass
 
     def select_my_wallets(self, user: 'UserBase'):
-        pass
+        with self._session_factory() as session:
+            session.execute(select(''))
 
     def select_wallet(self, find_wallet_id: str):
         pass

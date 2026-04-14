@@ -2,7 +2,6 @@ from app.common.enums.transaction_enums import TransactionTypesEnum
 from app.common.enums.user_enums import UserStatusesEnum
 from app.common.enums.wallet_enums import WalletTypesEnum
 from app.core.logger import add_logger
-from app.database.utils import create_tables
 from app.parsers.currencies_parser import start_currencies_parser
 from app.users.domain import Client, Admin
 from app.users.factory import UserRegistrations, UserFactory
@@ -28,7 +27,7 @@ def main() -> None:
 
     add_logger()
     start_currencies_parser()
-    create_tables()
+
 
     user_commands_repository = UserCommandsRepository(session_factory)
     user_queries_repository = UserQueriesRepository(session_factory)

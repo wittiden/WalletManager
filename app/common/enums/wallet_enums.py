@@ -9,14 +9,6 @@ class WalletTypesEnum(Enum):
     FOREIGN = 'Валютный кошелек'
 
 
-class WalletStrategyTypesEnum(Enum):
-    """"""
-
-    UNKNOWN = 'Неизвестный тип'
-    DEBIT = 'Дебетовая стратегия'
-    CREDIT = 'Кредитная стратегия'
-
-
 class WalletBalanceCurrenciesEnum(Enum):
     """Енам класс для перечисления типов валют (идет динамическая запись runtime)"""
 
