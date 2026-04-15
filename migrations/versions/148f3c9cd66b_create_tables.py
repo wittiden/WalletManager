@@ -1,8 +1,8 @@
-"""create tables
+"""create_tables
 
-Revision ID: f235f074617f
+Revision ID: 148f3c9cd66b
 Revises: 
-Create Date: 2026-04-14 14:17:27.753148
+Create Date: 2026-04-15 22:40:38.077113
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'f235f074617f'
+revision: str = '148f3c9cd66b'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -27,20 +27,20 @@ def upgrade() -> None:
     sa.Column('to_address', sa.String(length=26), nullable=False),
     sa.Column('completed_at', sa.DateTime(), nullable=False),
     sa.Column('amount', sa.Numeric(precision=10, scale=2), nullable=False),
-    sa.Column('operation_status', sa.Enum('UNKNOWN', 'PENDING', 'SUCCESS', 'FAILED', name='transactionstatusesenum'), nullable=False),
-    sa.Column('operation_type', sa.Enum('UNKNOWN', 'DEPOSIT', 'WITHDRAW', 'EXCHANGE', name='transactiontypesenum'), nullable=False),
+    sa.Column('operation_status', sa.Enum('UNKNOWN', 'PENDING', 'SUCCESS', 'FAILED', name='transaction_status_enum'), nullable=False),
+    sa.Column('operation_type', sa.Enum('UNKNOWN', 'DEPOSIT', 'WITHDRAW', 'EXCHANGE', name='transaction_type_enum'), nullable=False),
     sa.Column('fee', sa.Numeric(precision=10, scale=2), nullable=True),
-    sa.Column('from_currency', sa.Enum('UNKNOWN', name='walletbalancecurrenciesenum'), nullable=False),
-    sa.Column('to_currency', sa.Enum('UNKNOWN', name='walletbalancecurrenciesenum'), nullable=False),
+    sa.Column('from_currency', sa.Enum('UNKNOWN', name='wallet_balance_currency_enum'), nullable=True),
+    sa.Column('to_currency', sa.Enum('UNKNOWN', name='wallet_balance_currency_enum'), nullable=True),
     sa.PrimaryKeyConstraint('transaction_id')
     )
     op.create_table('users',
     sa.Column('user_id', sa.String(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
-    sa.Column('email', sa.String(length=128), nullable=False),
+    sa.Column('email', sa.String(length=255), nullable=False),
     sa.Column('password', sa.String(), nullable=False),
     sa.Column('is_blocked', sa.Boolean(), nullable=False),
-    sa.Column('status', sa.Enum('UNKNOWN', 'CLIENT', 'ADMIN', name='userstatusesenum'), nullable=False),
+    sa.Column('status', sa.Enum('UNKNOWN', 'CLIENT', 'ADMIN', name='user_status_enum'), nullable=False),
     sa.PrimaryKeyConstraint('user_id'),
     sa.UniqueConstraint('email')
     )
@@ -50,7 +50,7 @@ def upgrade() -> None:
     sa.Column('address', sa.String(), nullable=False),
     sa.Column('owner_id', sa.String(), nullable=False),
     sa.Column('is_blocked', sa.Boolean(), nullable=False),
-    sa.Column('status', sa.Enum('UNKNOWN', 'REGULAR', 'FOREIGN', name='wallettypesenum'), nullable=False),
+    sa.Column('status', sa.Enum('UNKNOWN', 'REGULAR', 'FOREIGN', name='wallet_type_enum'), nullable=False),
     sa.ForeignKeyConstraint(['owner_id'], ['users.user_id'], ),
     sa.PrimaryKeyConstraint('wallet_id'),
     sa.UniqueConstraint('address')
@@ -60,7 +60,7 @@ def upgrade() -> None:
     sa.Column('balance_currency', sa.Enum('UNKNOWN', name='walletbalancecurrenciesenum'), nullable=False),
     sa.Column('balance_amount', sa.Numeric(precision=10, scale=2), nullable=False),
     sa.ForeignKeyConstraint(['wallet_id'], ['wallets.wallet_id'], ),
-    sa.PrimaryKeyConstraint('wallet_id')
+    sa.PrimaryKeyConstraint('wallet_id', 'balance_currency')
     )
     # ### end Alembic commands ###
 
