@@ -2,21 +2,22 @@ from typing import Any, TYPE_CHECKING
 from sqlalchemy.orm import sessionmaker
 
 from app.database.models.transaction import TransactionTable
-from app.transactions.repository.mapper import TransactionMapper
 
 if TYPE_CHECKING:
     from app.transactions.domain import TransactionBase
+    from app.transactions.repository.mapper import TransactionMapper
 
 
 class TransactionCommandsRepository:
     """Класс репозиторий crud операций транзакций"""
 
-    def __init__(self, session_factory: sessionmaker) -> None:
+    def __init__(self, session_factory: sessionmaker, transaction_mapper: 'TransactionMapper') -> None:
         self._session_factory = session_factory
+        self._transaction_mapper = transaction_mapper
 
     def insert_transaction_info(self, transaction: 'TransactionBase') -> None:
         with self._session_factory() as session:
-            obj = TransactionMapper.domain_to_table(transaction)
+            obj = self._transaction_mapper.domain_to_table(transaction)
             session.add(obj)
             session.commit()
 

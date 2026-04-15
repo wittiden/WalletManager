@@ -81,19 +81,19 @@ class WalletBase(MixinId):
 class RegularWallet(WalletBase):
     """Класс для хранения данных обычного кошелька"""
 
-    _regular_balance_currency: 'WalletBalanceCurrenciesEnum'
+    _balance_currency: 'WalletBalanceCurrenciesEnum'
 
     def __post_init__(self) -> None:
         super().__post_init__()
 
-        DomainInvariant.is_instance('regular_balance_currency', self._regular_balance_currency, WalletBalanceCurrenciesEnum)
+        DomainInvariant.is_instance('regular_balance_currency', self._balance_currency, WalletBalanceCurrenciesEnum)
 
-        self._balance: dict[str, Decimal] = {self._regular_balance_currency.name: Decimal('0.00')}
+        self._balance: dict[str, Decimal] = {self._balance_currency.name: Decimal('0.00')}
         self._status = WalletTypesEnum.REGULAR
 
     @property
     def balance_currency(self) -> 'WalletBalanceCurrenciesEnum':
-        return self._regular_balance_currency
+        return self._balance_currency
 
     @property
     def balance(self) -> dict[str, Decimal]:
@@ -101,7 +101,7 @@ class RegularWallet(WalletBase):
 
     @balance_currency.setter
     def balance_currency(self, value: 'WalletBalanceCurrenciesEnum') -> None:
-        self._regular_balance_currency = value
+        self._balance_currency = value
 
     def __repr__(self) -> str:
         return f'{super().__repr__()}\nBalance: {self._balance}'
@@ -113,27 +113,27 @@ class RegularWallet(WalletBase):
 class ForeignWallet(WalletBase):
     """Класс для хранения данных валютного кошелька"""
 
-    _foreign_balance_currencies: list['WalletBalanceCurrenciesEnum']
+    _balance_currencies: list['WalletBalanceCurrenciesEnum']
 
     def __post_init__(self) -> None:
         super().__post_init__()
 
-        DomainInvariant.no_none('foreign_balance_currencies', self._foreign_balance_currencies)
+        DomainInvariant.no_none('foreign_balance_currencies', self._balance_currencies)
 
-        self._balance: dict[str, Decimal] = {el.name: Decimal('0.00') for el in self._foreign_balance_currencies}
+        self._balance: dict[str, Decimal] = {el.name: Decimal('0.00') for el in self._balance_currencies}
         self._status = WalletTypesEnum.FOREIGN
 
     @property
-    def foreign_balance_currencies(self) -> list['WalletBalanceCurrenciesEnum']:
-        return self._foreign_balance_currencies
+    def balance_currencies(self) -> list['WalletBalanceCurrenciesEnum']:
+        return self._balance_currencies
 
     @property
     def balance(self) -> dict[str, Decimal]:
         return self._balance
 
-    @foreign_balance_currencies.setter
-    def foreign_balance_currencies(self, value: list['WalletBalanceCurrenciesEnum']) -> None:
-        self._foreign_balance_currencies = value
+    @balance_currencies.setter
+    def balance_currencies(self, value: list['WalletBalanceCurrenciesEnum']) -> None:
+        self._balance_currencies = value
 
     def __repr__(self) -> str:
         return f'{super().__repr__()}\nBalance: {self._balance}'

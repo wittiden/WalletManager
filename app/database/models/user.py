@@ -16,12 +16,12 @@ class UserTable(Base):
 
     user_id: Mapped[str] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(nullable=False)
-    email: Mapped[str] = mapped_column(String(128), unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(nullable=False)
     is_blocked: Mapped[bool] = mapped_column(default=False, nullable=False)
-    status: Mapped[UserStatusesEnum] = mapped_column(Enum(UserStatusesEnum), default=UserStatusesEnum.UNKNOWN, nullable=False)
+    status: Mapped['UserStatusesEnum'] = mapped_column(Enum(UserStatusesEnum, name='user_status_enum'), default=UserStatusesEnum.UNKNOWN, nullable=False)
 
-    wallets: Mapped[list['WalletTable']] = relationship('WalletTable', back_populates='owner')
+    wallets: Mapped[list['WalletTable']] = relationship('WalletTable', back_populates='owner', cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return f'{self.status.value} #{self.user_id}\nName: {self.name}, email: {self.email}, is_blocked: {self.is_blocked}'

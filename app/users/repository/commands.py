@@ -2,21 +2,22 @@ from typing import Any, TYPE_CHECKING
 from sqlalchemy.orm import sessionmaker
 
 from app.database.models.user import UserTable
-from app.users.repository.mapper import UserMapper
 
 if TYPE_CHECKING:
     from app.users.domain import UserBase
+    from app.users.repository.mapper import UserMapper
 
 
 class UserCommandsRepository:
     """Класс репозиторий crud операций пользователя"""
 
-    def __init__(self, session_factory: sessionmaker) -> None:
+    def __init__(self, session_factory: sessionmaker, user_mapper: 'UserMapper') -> None:
         self._session_factory = session_factory
+        self._user_mapper = user_mapper
 
     def insert_user_info(self, user: 'UserBase') -> None:
         with self._session_factory() as session:
-            obj = UserMapper.domain_to_table(user)
+            obj = self._user_mapper.domain_to_table(user)
             session.add(obj)
             session.commit()
 

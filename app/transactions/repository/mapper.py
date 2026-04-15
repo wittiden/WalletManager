@@ -1,22 +1,26 @@
+from typing import TYPE_CHECKING
+
 from app.common.enums.transaction_enums import TransactionTypesEnum
 from app.database.models.transaction import TransactionTable
-from app.transactions.domain import TransactionBase, DepositTransaction, WithdrawTransaction, ExchangeTransaction
+
+if TYPE_CHECKING:
+    from app.transactions.domain import TransactionBase
+    from app.transactions.factory import TransactionFactory
 
 
 class TransactionMapper:
     """Mapper класс для преобразования transaction->orm_transaction, orm_transaction->transaction"""
 
-    @staticmethod
-    def table_to_domain(transaction_table: 'TransactionTable') -> 'TransactionBase':
+    def __init__(self, transaction_factory: 'TransactionFactory') -> None:
+        self._transaction_factory = transaction_factory
+
+    def table_to_domain(self, transaction_table: 'TransactionTable') -> 'TransactionBase':
         if transaction_table.operation_type == TransactionTypesEnum.DEPOSIT:
-            obj = DepositTransaction(_from_address=transaction_table.from_address, _to_address=transaction_table.to_address, _completed_at=transaction_table.completed_at, _amount=transaction_table.amount)
-
+            obj = self._transaction_factory.create_transaction(transaction_table.operation_type, transaction_table.from_address, transaction_table.to_address, transaction_table.completed_at, transaction_table.amount, transaction_table.operation_status)
         elif transaction_table.operation_type == TransactionTypesEnum.WITHDRAW:
-            obj = WithdrawTransaction(_from_address=transaction_table.from_address, _to_address=transaction_table.to_address, _completed_at=transaction_table.completed_at, _amount=transaction_table.amount, _withdraw_fee=transaction_table.fee)
-
+            obj = self._transaction_factory.create_transaction(transaction_table.operation_type, transaction_table.from_address, transaction_table.to_address, transaction_table.completed_at, transaction_table.amount, transaction_table.operation_status, transaction_table.fee)
         elif transaction_table.operation_type == TransactionTypesEnum.EXCHANGE:
-            obj = ExchangeTransaction(_from_address=transaction_table.from_address, _to_address=transaction_table.to_address, _completed_at=transaction_table.completed_at, _amount=transaction_table.amount, _exchange_fee=transaction_table.fee, _from_currency=transaction_table.from_currency, _to_currency=transaction_table.to_currency)
-
+            obj = self._transaction_factory.create_transaction(transaction_table.operation_type, transaction_table.from_address, transaction_table.to_address, transaction_table.completed_at, transaction_table.amount, transaction_table.operation_status, transaction_table.fee, transaction_table.from_currency, transaction_table.to_currency)
         else:
             raise ValueError(f"Unknown status: {transaction_table.operation_type}")
 
