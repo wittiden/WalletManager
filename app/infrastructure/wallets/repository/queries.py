@@ -5,9 +5,9 @@ from sqlalchemy.orm import sessionmaker
 from app.database.models import WalletTable
 
 if TYPE_CHECKING:
-    from app.users.domain import UserBase
-    from app.wallets.domain import WalletBase
-    from app.wallets.repository.mapper import WalletMapper
+    from app.infrastructure.users.domain import UserBase
+    from app.infrastructure.wallets.domain import WalletBase
+    from app.infrastructure.wallets.repository.mapper import WalletMapper
 
 
 class WalletQueriesRepository:

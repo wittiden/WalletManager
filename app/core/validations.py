@@ -4,7 +4,7 @@ from app.common.enums.user_enums import UserStatusesEnum
 from app.core.exceptions import IsNoneError, IsEmptyError, IsInstanceError, UserIsNotAdminError, UserIsNotClientError
 
 if TYPE_CHECKING:
-    from app.users.domain import UserBase
+    from app.infrastructure.users.domain import UserBase
 
 
 class GeneralValidation:

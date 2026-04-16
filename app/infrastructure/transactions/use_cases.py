@@ -9,11 +9,11 @@ from app.core.validations import GeneralValidation
 from app.core.decorators import debug_log, info_log
 
 if TYPE_CHECKING:
-    from app.transactions.repository.commands import TransactionCommandsRepository
-    from app.transactions.repository.queries import TransactionQueriesRepository
-    from app.transactions.domain import TransactionBase
-    from app.transactions.factory import TransactionFactory
-    from app.transactions.schemas import CreateDepositTransactionSchema, CreateExchangeTransactionSchema, \
+    from app.infrastructure.transactions.repository.commands import TransactionCommandsRepository
+    from app.infrastructure.transactions.repository.queries import TransactionQueriesRepository
+    from app.infrastructure.transactions.domain import TransactionBase
+    from app.infrastructure.transactions.factory import TransactionFactory
+    from app.infrastructure.transactions.schemas import CreateDepositTransactionSchema, CreateExchangeTransactionSchema, \
         CreateWithdrawTransactionSchema
 
 

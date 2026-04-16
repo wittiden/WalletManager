@@ -4,8 +4,8 @@ from app.common.enums.balance_enums import BalanceTypesEnum
 from app.database.models import BalanceTable
 
 if TYPE_CHECKING:
-    from app.balances.domain import BalanceBase, RegularBalance, ForeignBalance
-    from app.balances.factory import BalanceFactory
+    from app.infrastructure.balances.domain import BalanceBase, RegularBalance, ForeignBalance
+    from app.infrastructure.balances.factory import BalanceFactory
 
 
 class BalanceMapper:

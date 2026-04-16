@@ -4,7 +4,7 @@ from app.common.enums.balance_enums import BalanceTypesEnum
 from app.core.validations import GeneralValidation
 
 if TYPE_CHECKING:
-    from app.balances.domain import BalanceBase
+    from app.infrastructure.balances.domain import BalanceBase
 
 P = ParamSpec('P')
 

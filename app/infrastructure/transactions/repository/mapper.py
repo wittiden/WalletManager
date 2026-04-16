@@ -4,8 +4,8 @@ from app.common.enums.transaction_enums import TransactionTypesEnum
 from app.database.models.transaction import TransactionTable
 
 if TYPE_CHECKING:
-    from app.transactions.domain import TransactionBase
-    from app.transactions.factory import TransactionFactory
+    from app.infrastructure.transactions.domain import TransactionBase
+    from app.infrastructure.transactions.factory import TransactionFactory
 
 
 class TransactionMapper:

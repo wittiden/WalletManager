@@ -3,8 +3,8 @@ from typing import TYPE_CHECKING
 from app.database.models.wallet import WalletTable
 
 if TYPE_CHECKING:
-    from app.wallets.domain import WalletBase
-    from app.wallets.factory import WalletFactory
+    from app.infrastructure.wallets.domain import WalletBase
+    from app.infrastructure.wallets.factory import WalletFactory
 
 
 class WalletMapper:

@@ -2,7 +2,7 @@ import pytest
 
 from app.common.enums.user_enums import UserStatusesEnum
 from tests.users.conftest import user_registrations
-from app.users.domain import Client, Admin
+from app.infrastructure.users.domain import Client, Admin
 
 
 @pytest.mark.unit

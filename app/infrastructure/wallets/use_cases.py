@@ -8,13 +8,13 @@ from app.core.utils import get_hash
 from app.core.validations import UseCasesValidation, GeneralValidation
 
 if TYPE_CHECKING:
-    from app.users.domain import UserBase
-    from app.wallets.factory import WalletFactory
-    from app.wallets.schemas import CreateWalletSchema, CloseWalletSchema
-    from app.wallets.repository.commands import WalletCommandsRepository
-    from app.wallets.repository.queries import WalletQueriesRepository
-    from app.wallets.domain import WalletBase
-    from app.users.repository.commands import UserCommandsRepository
+    from app.infrastructure.users.domain import UserBase
+    from app.infrastructure.wallets.factory import WalletFactory
+    from app.infrastructure.wallets.schemas import CreateWalletSchema, CloseWalletSchema
+    from app.infrastructure.wallets.repository.commands import WalletCommandsRepository
+    from app.infrastructure.wallets.repository.queries import WalletQueriesRepository
+    from app.infrastructure.wallets.domain import WalletBase
+    from app.infrastructure.users.repository.commands import UserCommandsRepository
 
 
 class WalletServiceFacade:

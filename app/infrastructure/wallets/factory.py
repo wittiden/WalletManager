@@ -4,7 +4,7 @@ from app.common.enums.wallet_enums import WalletTypesEnum
 from app.core.validations import GeneralValidation
 
 if TYPE_CHECKING:
-    from app.wallets.domain import WalletBase
+    from app.infrastructure.wallets.domain import WalletBase
 
 P = ParamSpec('P')
 

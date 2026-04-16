@@ -2,30 +2,27 @@ from app.common.enums.transaction_enums import TransactionTypesEnum
 from app.common.enums.user_enums import UserStatusesEnum
 from app.common.enums.wallet_enums import WalletTypesEnum
 from app.core.logger import add_logger
-from app.transactions.repository.mapper import TransactionMapper
-from app.users.domain import Client, Admin
-from app.users.factory import UserRegistrations, UserFactory
-from app.users.repository.commands import UserCommandsRepository
+from app.infrastructure.transactions.repository.mapper import TransactionMapper
+from app.infrastructure.users.domain import Client, Admin
+from app.infrastructure.users.factory import UserRegistrations, UserFactory
+from app.infrastructure.users.repository.commands import UserCommandsRepository
 from app.database.engine import session_factory
-from app.users.repository.mapper import UserMapper
-from app.users.repository.queries import UserQueriesRepository
-from app.users.schemas import CreateUserSchema, LoginUserSchema
-from app.users.use_cases import CreateUserService, LoginUserService, ShowUserService, SortUserService, BlockUserService, \
+from app.infrastructure.users.repository.mapper import UserMapper
+from app.infrastructure.users.repository.queries import UserQueriesRepository
+from app.infrastructure.users.use_cases import CreateUserService, LoginUserService, ShowUserService, SortUserService, BlockUserService, \
     UserServiceFacade, CloseUserService
-from app.transactions.domain import DepositTransaction, WithdrawTransaction, ExchangeTransaction
-from app.transactions.factory import TransactionFactory, TransactionRegistry
-from app.transactions.use_cases import TransactionServiceFacade, CreateTransactionService, ShowTransactionService, SortTransactionService
-from app.transactions.repository.queries import TransactionQueriesRepository
-from app.transactions.repository.commands import TransactionCommandsRepository
-from app.wallets.domain import DebitWallet, CreditWallet
-from app.wallets.factory import WalletFactory, WalletFactoryRegistry
-from app.wallets.repository.mapper import WalletMapper
-from app.wallets.schemas import CreateWalletSchema
-from app.wallets.use_cases import CreateWalletService, SortWalletService, ShowWalletService, CloseWalletService, \
+from app.infrastructure.transactions.domain import DepositTransaction, WithdrawTransaction, ExchangeTransaction
+from app.infrastructure.transactions.factory import TransactionFactory, TransactionRegistry
+from app.infrastructure.transactions.use_cases import TransactionServiceFacade, CreateTransactionService, ShowTransactionService, SortTransactionService
+from app.infrastructure.transactions.repository.queries import TransactionQueriesRepository
+from app.infrastructure.transactions.repository.commands import TransactionCommandsRepository
+from app.infrastructure.wallets.domain import DebitWallet, CreditWallet
+from app.infrastructure.wallets.factory import WalletFactory, WalletFactoryRegistry
+from app.infrastructure.wallets.repository.mapper import WalletMapper
+from app.infrastructure.wallets.use_cases import CreateWalletService, SortWalletService, ShowWalletService, CloseWalletService, \
     WalletServiceFacade, BlockWalletService
-from app.wallets.repository.queries import WalletQueriesRepository
-from app.wallets.repository.commands import WalletCommandsRepository
-from app.wallets.repository.queries import WalletQueriesRepository
+from app.infrastructure.wallets.repository.commands import WalletCommandsRepository
+from app.infrastructure.wallets.repository.queries import WalletQueriesRepository
 
 
 def activate_user_factory() -> 'UserFactory':

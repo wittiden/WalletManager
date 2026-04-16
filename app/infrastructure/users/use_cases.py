@@ -6,14 +6,14 @@ from app.core.decorators import debug_log, info_log
 from app.core.exceptions import UserIsBlockedError, UserIsNotBlockedError
 from app.core.utils import get_hash
 from app.core.validations import GeneralValidation, UseCasesValidation
-from app.users.schemas import CloseUserSchema
+from app.infrastructure.users.schemas import CloseUserSchema
 
 if TYPE_CHECKING:
-    from app.users.domain import UserBase
-    from app.users.factory import UserFactory
-    from app.users.repository.commands import UserCommandsRepository
-    from app.users.repository.queries import UserQueriesRepository
-    from app.users.schemas import CreateUserSchema, LoginUserSchema
+    from app.infrastructure.users.domain import UserBase
+    from app.infrastructure.users.factory import UserFactory
+    from app.infrastructure.users.repository.commands import UserCommandsRepository
+    from app.infrastructure.users.repository.queries import UserQueriesRepository
+    from app.infrastructure.users.schemas import CreateUserSchema, LoginUserSchema
 
 
 class UserServiceFacade:

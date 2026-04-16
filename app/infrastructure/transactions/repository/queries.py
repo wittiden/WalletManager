@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING
 from app.database.models.transaction import TransactionTable
 
 if TYPE_CHECKING:
-    from app.transactions.domain import TransactionBase
-    from app.transactions.repository.mapper import TransactionMapper
+    from app.infrastructure.transactions.domain import TransactionBase
+    from app.infrastructure.transactions.repository.mapper import TransactionMapper
 
 
 class TransactionQueriesRepository:

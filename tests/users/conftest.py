@@ -1,9 +1,9 @@
 import pytest
-from app.users.factory import UserFactory, UserRegistrations
+from app.infrastructure.users.factory import UserFactory, UserRegistrations
 from app.common.enums.user_enums import UserStatusesEnum
-from app.users.domain import Admin, Client
+from app.infrastructure.users.domain import Admin, Client
 from app.users.repository.repository import UserRepository
-from app.users.use_cases import UserServiceFacade, CreateUserService, LoginUserService, SortUserService, ShowUserService, BlockUserService
+from app.infrastructure.users.use_cases import UserServiceFacade, CreateUserService, LoginUserService, SortUserService, ShowUserService, BlockUserService
 
 
 @pytest.fixture(scope='package')

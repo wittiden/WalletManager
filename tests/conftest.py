@@ -1,5 +1,5 @@
 import pytest
-from app.users.domain import Client, Admin
+from app.infrastructure.users.domain import Client, Admin
 
 
 @pytest.fixture

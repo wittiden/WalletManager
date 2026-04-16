@@ -4,8 +4,8 @@ from sqlalchemy.orm import sessionmaker
 from app.database.models.user import UserTable
 
 if TYPE_CHECKING:
-    from app.users.domain import UserBase
-    from app.users.repository.mapper import UserMapper
+    from app.infrastructure.users.domain import UserBase
+    from app.infrastructure.users.repository.mapper import UserMapper
 
 
 class UserCommandsRepository:

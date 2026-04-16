@@ -4,7 +4,7 @@ from app.common.enums.user_enums import UserStatusesEnum
 from app.core.validations import GeneralValidation
 
 if TYPE_CHECKING:
-    from app.users.domain import UserBase
+    from app.infrastructure.users.domain import UserBase
 
 P = ParamSpec('P')
 

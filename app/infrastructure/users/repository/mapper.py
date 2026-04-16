@@ -3,8 +3,8 @@ from typing import TYPE_CHECKING
 from app.database.models.user import UserTable
 
 if TYPE_CHECKING:
-    from app.users.domain import UserBase
-    from app.users.factory import UserFactory
+    from app.infrastructure.users.domain import UserBase
+    from app.infrastructure.users.factory import UserFactory
 
 
 class UserMapper:

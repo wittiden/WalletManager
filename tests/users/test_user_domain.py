@@ -1,7 +1,7 @@
 import pytest
 
 from app.core.exceptions import IsEmptyError
-from app.users.domain import Client, Admin
+from app.infrastructure.users.domain import Client, Admin
 
 
 @pytest.mark.unit

@@ -4,7 +4,7 @@ from app.common.enums.transaction_enums import TransactionTypesEnum
 from app.core.validations import GeneralValidation
 
 if TYPE_CHECKING:
-    from app.transactions.domain import TransactionBase
+    from app.infrastructure.transactions.domain import TransactionBase
 
 P = ParamSpec('P')
 
