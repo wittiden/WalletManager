@@ -1,8 +1,8 @@
 """create_tables
 
-Revision ID: 023c6d5b8be2
+Revision ID: bada744d2074
 Revises: 
-Create Date: 2026-04-16 23:00:15.599153
+Create Date: 2026-04-17 02:09:11.076786
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '023c6d5b8be2'
+revision: str = 'bada744d2074'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -58,8 +58,10 @@ def upgrade() -> None:
     op.create_table('balances',
     sa.Column('balance_id', sa.String(), nullable=False),
     sa.Column('wallet_id', sa.String(), nullable=False),
-    sa.Column('balance_currency', sa.String(), nullable=False),
-    sa.Column('balance_amount', sa.Numeric(precision=10, scale=2), nullable=False),
+    sa.Column('is_frozen', sa.Boolean(), nullable=False),
+    sa.Column('currency', sa.String(), nullable=False),
+    sa.Column('amount', sa.Numeric(precision=10, scale=2), nullable=False),
+    sa.Column('balance_type', sa.Enum('UNKNOWN', 'REGULAR', 'FOREIGN', name='balance_type_enum'), nullable=False),
     sa.ForeignKeyConstraint(['wallet_id'], ['wallets.wallet_id'], ),
     sa.PrimaryKeyConstraint('balance_id')
     )

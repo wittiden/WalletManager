@@ -1,7 +1,13 @@
+from app.common.enums.balance_enums import BalanceTypesEnum
 from app.common.enums.transaction_enums import TransactionTypesEnum
 from app.common.enums.user_enums import UserStatusesEnum
 from app.common.enums.wallet_enums import WalletTypesEnum
 from app.core.logger import add_logger
+from app.infrastructure.balances.domain import RegularBalance, ForeignBalance
+from app.infrastructure.balances.factory import BalanceFactory, BalanceRegistry
+from app.infrastructure.balances.repository.commands import BalanceCommandsRepository
+from app.infrastructure.balances.repository.mapper import BalanceMapper
+from app.infrastructure.balances.repository.queries import BalanceQueriesRepository
 from app.infrastructure.transactions.repository.mapper import TransactionMapper
 from app.infrastructure.users.domain import Client, Admin
 from app.infrastructure.users.factory import UserRegistrations, UserFactory
@@ -44,6 +50,12 @@ def activate_transaction_factory() -> 'TransactionFactory':
     transaction_registration.set_registration(TransactionTypesEnum.EXCHANGE, ExchangeTransaction)
     return TransactionFactory(transaction_registration)
 
+def activate_balance_factory() -> 'BalanceFactory':
+    balance_registration = BalanceRegistry()
+    balance_registration.set_registration(BalanceTypesEnum.REGULAR, RegularBalance)
+    balance_registration.set_registration(BalanceTypesEnum.FOREIGN, ForeignBalance)
+    return BalanceFactory(balance_registration)
+
 
 def activate_user_service_facade(user_factory: 'UserFactory', user_commands_repository: 'UserCommandsRepository', user_queries_repository: 'UserQueriesRepository') -> 'UserServiceFacade':
 
@@ -81,10 +93,12 @@ def main() -> None:
     user_factory = activate_user_factory()
     wallet_factory = activate_wallet_factory()
     transaction_factory = activate_transaction_factory()
+    balance_factory = activate_balance_factory()
 
     user_mapper = UserMapper(user_factory)
     wallet_mapper = WalletMapper(wallet_factory)
     transaction_mapper = TransactionMapper(transaction_factory)
+    balance_mapper = BalanceMapper(balance_factory)
 
     user_commands_repository = UserCommandsRepository(session_factory, user_mapper)
     user_queries_repository = UserQueriesRepository(session_factory, user_mapper, wallet_mapper)
@@ -92,6 +106,8 @@ def main() -> None:
     wallet_queries_repository = WalletQueriesRepository(session_factory, wallet_mapper)
     transaction_commands_repository = TransactionCommandsRepository(session_factory, transaction_mapper)
     transaction_queries_repository = TransactionQueriesRepository(session_factory, transaction_mapper)
+    balance_commands_repository = BalanceCommandsRepository(session_factory, balance_mapper)
+    balance_queries_repository = BalanceQueriesRepository(session_factory, balance_mapper)
 
     user_service_facade = activate_user_service_facade(user_factory, user_commands_repository, user_queries_repository)
     wallet_service_facade = activate_wallet_service_facade(wallet_factory, wallet_commands_repository, wallet_queries_repository, user_commands_repository)

@@ -20,5 +20,9 @@ class SortBalanceService:
     """Класс сервис по сортировке баланса"""
 
 
+class FreezeBalanceService:
+    """Класс сервис для заморозки и разморозки баланса"""
+
+
 class CloseBalanceService:
     """Класс сервис по закрытию баланса"""
