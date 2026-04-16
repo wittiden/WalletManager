@@ -6,6 +6,7 @@ from app.core.decorators import debug_log, info_log
 from app.core.exceptions import UserIsBlockedError, UserIsNotBlockedError
 from app.core.utils import get_hash
 from app.core.validations import GeneralValidation, UseCasesValidation
+from app.users.schemas import CloseUserSchema
 
 if TYPE_CHECKING:
     from app.users.domain import UserBase
@@ -18,12 +19,13 @@ if TYPE_CHECKING:
 class UserServiceFacade:
     """Фасадный сервис класс для управления сервисами"""
 
-    def __init__(self, create_user_service: 'CreateUserService', login_user_service: 'LoginUserService', show_user_service: 'ShowUserService', block_user_service: 'BlockUserService', sort_user_service: 'SortUserService') -> None:
+    def __init__(self, create_user_service: 'CreateUserService', login_user_service: 'LoginUserService', show_user_service: 'ShowUserService', block_user_service: 'BlockUserService', sort_user_service: 'SortUserService', close_user_service: 'CloseUserService') -> None:
         self._create_user_service = create_user_service
         self._login_user_service = login_user_service
         self._show_user_service = show_user_service
         self._block_user_service = block_user_service
         self._sort_user_service = sort_user_service
+        self._close_user_service = close_user_service
 
     @debug_log
     @info_log(['', 'Пользователь создан'])
@@ -65,6 +67,11 @@ class UserServiceFacade:
     def unblock_user(self, user: 'UserBase', find_user_id: str) -> None:
         self._block_user_service.unblock_user(user, find_user_id)
 
+    @debug_log
+    @info_log(['', 'Аккаунт пользователя закрыт'])
+    def close_user(self, schema: 'CloseUserSchema') -> None:
+        self._close_user_service.close_user(schema.name, schema.email, schema.password)
+
 
 class CreateUserService:
     """Сервис класс по созданию пользователя"""
@@ -92,7 +99,7 @@ class LoginUserService:
         self._user_queries_repository = user_queries_repository
 
     def login_user(self, email: str, password: str) -> 'UserBase':
-        user = self._user_queries_repository.select_user_for_login(email, get_hash(password))
+        user = self._user_queries_repository.select_user_for_email_and_pass(email, get_hash(password))
         GeneralValidation.not_none_checker(user)
 
         if user.is_blocked:
@@ -157,3 +164,22 @@ class BlockUserService:
             raise UserIsNotBlockedError
 
         self._user_commands_repository.update_user_info(find_user, {'is_blocked': False})
+
+
+class CloseUserService:
+    """Сервис класс для закрытия аккаунта пользователя"""
+
+    def __init__(self, user_commands_repository: 'UserCommandsRepository', user_queries_repository: 'UserQueriesRepository') -> None:
+        self._user_commands_repository = user_commands_repository
+        self._user_queries_repository = user_queries_repository
+
+    def close_user(self, name: str, email: str, password: str) -> None:
+        user = self._user_queries_repository.select_user_for_email_and_pass(email, password)
+        GeneralValidation.not_none_checker(user)
+        if user.name == name:
+            if user.is_blocked:
+                raise UserIsBlockedError
+
+            self._user_commands_repository.delete_user_info(user)
+
+        raise ValueError

@@ -2,21 +2,25 @@ from typing import TYPE_CHECKING
 from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
 
+from app.database.models import WalletTable
 from app.database.models.user import UserTable
 
 if TYPE_CHECKING:
     from app.users.domain import UserBase
     from app.users.repository.mapper import UserMapper
+    from app.wallets.repository.mapper import WalletMapper
+    from app.wallets.domain import WalletBase
 
 
 class UserQueriesRepository:
     """Класс репозиторий select операций пользователя"""
 
-    def __init__(self, session_factory: sessionmaker, user_mapper: 'UserMapper') -> None:
+    def __init__(self, session_factory: sessionmaker, user_mapper: 'UserMapper', wallet_mapper: 'WalletMapper') -> None:
         self._session_factory = session_factory
         self._user_mapper = user_mapper
+        self._wallet_mapper = wallet_mapper
 
-    def select_user_for_login(self, email: str, password: str) -> 'UserBase':
+    def select_user_for_email_and_pass(self, email: str, password: str) -> 'UserBase':
         with self._session_factory() as session:
             obj = session.execute(select(UserTable).where(UserTable.email == email, UserTable.password == password)).scalar_one_or_none()
 
@@ -46,3 +50,8 @@ class UserQueriesRepository:
             obj = session.execute(select(UserTable).order_by(column)).scalars().all()
 
             return [self._user_mapper.table_to_domain(user) for user in obj]
+
+    def select_my_wallets(self, user: 'UserBase') -> list['WalletBase']:
+        with self._session_factory() as session:
+            objs = session.execute(select(WalletTable).where(WalletTable.owner_id == user.item_id)).scalars().all()
+            return [self._wallet_mapper.table_to_domain(obj) for obj in objs]

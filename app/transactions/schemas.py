@@ -2,7 +2,6 @@ from decimal import Decimal
 from pydantic import BaseModel, field_validator, Field
 
 from app.common.enums.transaction_enums import TransactionStatusesEnum, TransactionTypesEnum
-from app.common.enums.wallet_enums import WalletBalanceCurrenciesEnum
 from app.core.exceptions import AddressFormatError
 
 
@@ -13,7 +12,7 @@ def validate_address(address: str) -> str:
     return address
 
 
-class CreateDebitTransactionSchema(BaseModel):
+class CreateDepositTransactionSchema(BaseModel):
     """Класс схема для проверки полей при создании debit транзакции"""
 
     from_address: str
@@ -53,8 +52,8 @@ class CreateExchangeTransactionSchema(BaseModel):
     operation_status: TransactionStatusesEnum
     operation_type: TransactionTypesEnum
     exchange_fee: Decimal = Field(gt=0)
-    from_currency: 'WalletBalanceCurrenciesEnum'
-    to_currency: 'WalletBalanceCurrenciesEnum'
+    from_currency: str
+    to_currency: str
 
     @field_validator('from_address', 'to_address')
     @classmethod

@@ -1,14 +1,10 @@
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
 from blinker import Signal
 
 from app.common.enums.user_enums import UserStatusesEnum
 from app.common.mixins import MixinId
 from app.core.invariants import DomainInvariant
 from app.core.utils import blink_func
-
-if TYPE_CHECKING:
-    from app.wallets.domain import WalletBase
 
 user_upgrade_signal = Signal()
 user_upgrade_signal.connect(blink_func)
@@ -83,23 +79,13 @@ class UserBase(MixinId):
 class Client(UserBase):
     """Датакласс для хранения данных клиента"""
 
-    _wallets: list['WalletBase'] = field(default_factory=list)
-
     def __post_init__(self) -> None:
         super().__post_init__()
 
         self._status = UserStatusesEnum.CLIENT
 
-    @property
-    def wallets(self) -> list['WalletBase']:
-        return self._wallets
-
-    @wallets.setter
-    def wallets(self, value: list['WalletBase']) -> None:
-        self._wallets = value
-
     def __repr__(self) -> str:
-        return f'{super().__repr__()}\nWallets:\n{[f'{wallet}\n' for wallet in self._wallets]}\n'
+        return f'{super().__repr__()}\n'
 
     __str__ = __repr__
 

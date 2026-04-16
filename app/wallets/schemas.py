@@ -1,6 +1,6 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, Field
 
-from app.common.enums.wallet_enums import WalletBalanceCurrenciesEnum, WalletTypesEnum
+from app.common.enums.wallet_enums import WalletTypesEnum
 from app.core.exceptions import PinFormatError
 
 
@@ -14,25 +14,11 @@ def validate_pin(pin: str) -> str:
     return pin.strip()
 
 
-class CreateRegularWalletSchema(BaseModel):
-    """Класс схема для проверки полей при создании обычного кошелька"""
+class CreateWalletSchema(BaseModel):
+    """Класс схема для проверки полей при создании кошелька"""
 
     key: WalletTypesEnum
     pin: str
-    balance_currency: WalletBalanceCurrenciesEnum
-
-    @field_validator('pin')
-    @classmethod
-    def validate_pin(cls, pin: str) -> str:
-        return validate_pin(pin)
-
-
-class CreateForeignWalletSchema(BaseModel):
-    """Класс схема для проверки полей при создании валютного кошелька"""
-
-    key: WalletTypesEnum
-    pin: str
-    balance_currency: list[WalletBalanceCurrenciesEnum]
 
     @field_validator('pin')
     @classmethod
@@ -43,10 +29,11 @@ class CreateForeignWalletSchema(BaseModel):
 class CloseWalletSchema(BaseModel):
     """Класс схема для проверки полей при закрытии кошелька"""
 
-    wallet_id: str
     pin: str
+    address: str = Field(max_length=26, min_length=26)
 
     @field_validator('pin')
     @classmethod
     def validate_pin(cls, pin: str) -> str:
         return validate_pin(pin)
+

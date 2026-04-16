@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 
 from app.common.enums.transaction_enums import TransactionStatusesEnum
 from app.common.enums.transaction_enums import TransactionTypesEnum
-from app.common.enums.wallet_enums import WalletBalanceCurrenciesEnum
 from app.core.validations import GeneralValidation
 from app.core.decorators import debug_log, info_log
 
@@ -14,7 +13,7 @@ if TYPE_CHECKING:
     from app.transactions.repository.queries import TransactionQueriesRepository
     from app.transactions.domain import TransactionBase
     from app.transactions.factory import TransactionFactory
-    from app.transactions.schemas import CreateDebitTransactionSchema, CreateExchangeTransactionSchema, \
+    from app.transactions.schemas import CreateDepositTransactionSchema, CreateExchangeTransactionSchema, \
         CreateWithdrawTransactionSchema
 
 
@@ -28,13 +27,13 @@ class TransactionServiceFacade:
 
     @debug_log
     @info_log(['', 'Транзакция создана'])
-    def create_transaction(self, key: 'TransactionTypesEnum', schema: 'CreateDebitTransactionSchema | CreateWithdrawTransactionSchema | CreateExchangeTransactionSchema'):
-        if isinstance(schema, CreateDebitTransactionSchema):
-            obj = self._transaction_create_service.create_debit_transaction(key, schema.from_address, schema.to_address, schema.amount, schema.operation_status)
-        elif isinstance(schema, CreateWithdrawTransactionSchema):
-            obj = self._transaction_create_service.create_withdraw_transaction(key, schema.from_address, schema.to_address, schema.amount, schema.operation_status, schema.withdraw_fee)
-        elif isinstance(schema, CreateExchangeTransactionSchema):
-            obj = self._transaction_create_service.create_exchange_transaction(key, schema.from_address, schema.to_address, schema.amount, schema.operation_status, schema.exchange_fee, schema.from_currency, schema.to_currency)
+    def create_transaction(self, schema: 'CreateDepositTransactionSchema | CreateWithdrawTransactionSchema | CreateExchangeTransactionSchema'):
+        if schema.operation_type == TransactionTypesEnum.DEPOSIT:
+            obj = self._transaction_create_service.create_deposit_transaction(schema.operation_type, schema.from_address, schema.to_address, schema.amount, schema.operation_status)
+        elif schema.operation_type == TransactionTypesEnum.WITHDRAW:
+            obj = self._transaction_create_service.create_withdraw_transaction(schema.operation_type, schema.from_address, schema.to_address, schema.amount, schema.operation_status, schema.withdraw_fee)
+        elif schema.operation_type == TransactionTypesEnum.EXCHANGE:
+            obj = self._transaction_create_service.create_exchange_transaction(schema.operation_type, schema.from_address, schema.to_address, schema.amount, schema.operation_status, schema.exchange_fee, schema.from_currency, schema.to_currency)
         else:
             raise ValueError(f"Unknown type: {schema.operation_type}")
 
@@ -42,7 +41,7 @@ class TransactionServiceFacade:
 
     @debug_log
     @info_log(['Информация о транзакции:', ''])
-    def show_transaction(self, find_transaction_id) -> 'TransactionBase':
+    def show_transaction(self, find_transaction_id: str) -> 'TransactionBase':
         return self._transaction_show_service.show_transaction(find_transaction_id)
 
     @debug_log
@@ -63,7 +62,7 @@ class CreateTransactionService:
         self._transaction_factory = transaction_factory
         self._transaction_commands_repository = transaction_commands_repository
 
-    def create_debit_transaction(self, key: 'TransactionTypesEnum', from_address: str, to_address: str,  amount: Decimal, operation_status: 'TransactionStatusesEnum') -> 'TransactionBase':
+    def create_deposit_transaction(self, key: 'TransactionTypesEnum', from_address: str, to_address: str,  amount: Decimal, operation_status: 'TransactionStatusesEnum') -> 'TransactionBase':
         completed_at = datetime.now()
         transaction = self._transaction_factory.create_transaction(key, from_address, to_address, completed_at, amount, operation_status)
         GeneralValidation.not_none_checker(transaction)
@@ -76,6 +75,9 @@ class CreateTransactionService:
         return transaction
 
     def create_withdraw_transaction(self, key: 'TransactionTypesEnum', from_address: str, to_address: str,  amount: Decimal, operation_status: 'TransactionStatusesEnum', withdraw_fee: Decimal):
+        if from_address != to_address:
+            raise ValueError
+
         completed_at = datetime.now()
         transaction = self._transaction_factory.create_transaction(key, from_address, to_address, completed_at, amount, operation_status, withdraw_fee)
         GeneralValidation.not_none_checker(transaction)
@@ -87,7 +89,10 @@ class CreateTransactionService:
 
         return transaction
 
-    def create_exchange_transaction(self, key: 'TransactionTypesEnum', from_address: str, to_address: str,  amount: Decimal, operation_status: 'TransactionStatusesEnum', exchange_fee: Decimal, from_currency: 'WalletBalanceCurrenciesEnum', to_currency: 'WalletBalanceCurrenciesEnum'):
+    def create_exchange_transaction(self, key: 'TransactionTypesEnum', from_address: str, to_address: str,  amount: Decimal, operation_status: 'TransactionStatusesEnum', exchange_fee: Decimal, from_currency: str, to_currency: str):
+        if from_currency == to_currency:
+            raise ValueError
+
         completed_at = datetime.now()
         transaction = self._transaction_factory.create_transaction(key, from_address, to_address, completed_at, amount, operation_status, exchange_fee, from_currency, to_currency)
         GeneralValidation.not_none_checker(transaction)

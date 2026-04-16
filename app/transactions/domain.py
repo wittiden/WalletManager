@@ -4,7 +4,6 @@ from decimal import Decimal
 from blinker import Signal
 
 from app.common.enums.transaction_enums import TransactionStatusesEnum, TransactionTypesEnum
-from app.common.enums.wallet_enums import WalletBalanceCurrenciesEnum
 from app.common.mixins import MixinId
 from app.core.utils import blink_func
 
@@ -78,10 +77,10 @@ class TransactionBase(MixinId):
     def operation_status(self, value: 'TransactionStatusesEnum') -> None:
         old_value = self._operation_status
         self._operation_status = value
-        transaction_update_signal.send(self, feild='operation_status', old=old_value, new=value)
+        transaction_update_signal.send(self, field='operation_status', old=old_value, new=value)
 
     def __repr__(self) -> str:
-        return f'#{self.item_id} -> {self._operation_type}\nStatus: {self._operation_status}, from_address: {self._from_address}, to_address: {self._to_address}, amount: {self._amount}, completed_at: {self._completed_at}'
+        return f'#{self.item_id} -> {self._operation_type.value}\nStatus: {self._operation_status.value}, from_address: {self._from_address}, to_address: {self._to_address}, amount: {self._amount}, completed_at: {self._completed_at}'
 
     __str__ = __repr__
 
@@ -133,8 +132,8 @@ class ExchangeTransaction(TransactionBase):
     """Датакласс для хранения данных о транзакции обмена"""
 
     _exchange_fee: Decimal
-    _from_currency: 'WalletBalanceCurrenciesEnum'
-    _to_currency: 'WalletBalanceCurrenciesEnum'
+    _from_currency: str
+    _to_currency: str
 
     def __post_init__(self) -> None:
         super().__post_init__()
@@ -146,11 +145,11 @@ class ExchangeTransaction(TransactionBase):
         return self._exchange_fee
 
     @property
-    def from_currency(self) -> 'WalletBalanceCurrenciesEnum':
+    def from_currency(self) -> str:
         return self._from_currency
 
     @property
-    def to_currency(self) -> 'WalletBalanceCurrenciesEnum':
+    def to_currency(self) -> str:
         return self._to_currency
 
     @exchange_fee.setter
@@ -160,13 +159,13 @@ class ExchangeTransaction(TransactionBase):
         transaction_update_signal.send(self, field='exchange_fee', old=old_value, new=value)
 
     @from_currency.setter
-    def from_currency(self, value: 'WalletBalanceCurrenciesEnum') -> None:
+    def from_currency(self, value: str) -> None:
         old_value = self._from_currency
         self._from_currency = value
         transaction_update_signal.send(self, field='from_currency', old=old_value, new=value)
 
     @to_currency.setter
-    def to_currency(self, value: 'WalletBalanceCurrenciesEnum') -> None:
+    def to_currency(self, value: str) -> None:
         old_value = self._to_currency
         self._to_currency = value
         transaction_update_signal.send(self, field='to_currency', old=old_value, new=value)

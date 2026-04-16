@@ -1,8 +1,8 @@
 """create_tables
 
-Revision ID: 148f3c9cd66b
+Revision ID: 023c6d5b8be2
 Revises: 
-Create Date: 2026-04-15 22:40:38.077113
+Create Date: 2026-04-16 23:00:15.599153
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '148f3c9cd66b'
+revision: str = '023c6d5b8be2'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -30,8 +30,8 @@ def upgrade() -> None:
     sa.Column('operation_status', sa.Enum('UNKNOWN', 'PENDING', 'SUCCESS', 'FAILED', name='transaction_status_enum'), nullable=False),
     sa.Column('operation_type', sa.Enum('UNKNOWN', 'DEPOSIT', 'WITHDRAW', 'EXCHANGE', name='transaction_type_enum'), nullable=False),
     sa.Column('fee', sa.Numeric(precision=10, scale=2), nullable=True),
-    sa.Column('from_currency', sa.Enum('UNKNOWN', name='wallet_balance_currency_enum'), nullable=True),
-    sa.Column('to_currency', sa.Enum('UNKNOWN', name='wallet_balance_currency_enum'), nullable=True),
+    sa.Column('from_currency', sa.String(), nullable=True),
+    sa.Column('to_currency', sa.String(), nullable=True),
     sa.PrimaryKeyConstraint('transaction_id')
     )
     op.create_table('users',
@@ -50,17 +50,18 @@ def upgrade() -> None:
     sa.Column('address', sa.String(), nullable=False),
     sa.Column('owner_id', sa.String(), nullable=False),
     sa.Column('is_blocked', sa.Boolean(), nullable=False),
-    sa.Column('status', sa.Enum('UNKNOWN', 'REGULAR', 'FOREIGN', name='wallet_type_enum'), nullable=False),
+    sa.Column('account_type', sa.Enum('UNKNOWN', 'DEBIT', 'CREDIT', name='wallet_type_enum'), nullable=False),
     sa.ForeignKeyConstraint(['owner_id'], ['users.user_id'], ),
     sa.PrimaryKeyConstraint('wallet_id'),
     sa.UniqueConstraint('address')
     )
     op.create_table('balances',
+    sa.Column('balance_id', sa.String(), nullable=False),
     sa.Column('wallet_id', sa.String(), nullable=False),
-    sa.Column('balance_currency', sa.Enum('UNKNOWN', name='walletbalancecurrenciesenum'), nullable=False),
+    sa.Column('balance_currency', sa.String(), nullable=False),
     sa.Column('balance_amount', sa.Numeric(precision=10, scale=2), nullable=False),
     sa.ForeignKeyConstraint(['wallet_id'], ['wallets.wallet_id'], ),
-    sa.PrimaryKeyConstraint('wallet_id', 'balance_currency')
+    sa.PrimaryKeyConstraint('balance_id')
     )
     # ### end Alembic commands ###
 

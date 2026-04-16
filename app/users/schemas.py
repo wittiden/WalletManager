@@ -17,6 +17,13 @@ def validate_password(password: str) -> str:
     return password
 
 
+def validate_name(name: str) -> str:
+    if any(letter.isdigit() or letter.isspace() for letter in name):
+        raise NameFormatError('Name has digits or spaces')
+
+    return name
+
+
 class CreateUserSchema(BaseModel):
     """Класс схема для проверки полей при создании пользователя"""
 
@@ -28,10 +35,7 @@ class CreateUserSchema(BaseModel):
     @field_validator('name')
     @classmethod
     def validate_name(cls, name: str) -> str:
-        if any(letter.isdigit() or letter.isspace() for letter in name):
-            raise NameFormatError('Name has digits or spaces')
-
-        return name
+        return validate_name(name)
 
     @field_validator('password')
     @classmethod
@@ -49,3 +53,16 @@ class LoginUserSchema(BaseModel):
     @classmethod
     def validate_password(cls, password: str) -> str:
         return validate_password(password)
+
+
+class CloseUserSchema(BaseModel):
+    """Класс схема для проверки полей при закрытии аккаунта пользователя"""
+
+    name: str
+    email: EmailStr
+    password: str
+
+    @field_validator('name')
+    @classmethod
+    def validate_name(cls, name: str) -> str:
+        return validate_name(name)
