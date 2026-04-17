@@ -1,63 +1,61 @@
 
-
-
 # 🪙 WalletManager
 
-WalletManager — это backend-сервис для управления пользователями, кошельками, балансами и транзакциями.
-Проект построен на принципах **Clean Architecture / DDD-lite** с явным разделением домена, инфраструктуры и сценариев использования.
+WalletManager is a backend service for managing users, wallets, balances, and transactions.
+The project is built using **Clean Architecture / DDD-lite principles** with a clear separation of domain logic, infrastructure, and application use cases.
 
 ---
 
-# 🚀 Основные возможности
+# 🚀 Key Features
 
-* 👤 Управление пользователями (регистрация, логин, блокировка)
-* 👛 Управление кошельками (создание, блокировка, закрытие)
-* 💰 Управление балансами:
+* 👤 User management (registration, login, blocking)
+* 👛 Wallet management (creation, blocking, closing)
+* 💰 Balance management:
 
-  * обычные (1 валюта)
-  * мультивалютные (несколько валют в одном кошельке)
-* 💳 Управление транзакциями:
+  * regular (single currency)
+  * multi-currency (multiple assets per wallet)
+* 💳 Transaction management:
 
-  * пополнение
-  * вывод
-  * обмен
-* 🏭 Factory + Registry для всех доменных сущностей
-* 🔄 Mapper слой (domain ↔ database)
-* 🧠 Инварианты домена (DomainInvariant)
-* 🪝 Сигналы через blinker (реакция на изменения)
-* 🗄 SQLAlchemy + PostgreSQL
-* 📦 Facade слой для use-cases
-
----
-
-# 🧠 Архитектура проекта
-
-Проект разделён на слои в стиле **Clean Architecture**.
+  * deposit
+  * withdrawal
+  * exchange
+* 🏭 Factory + Registry pattern for all domain entities
+* 🔄 Mapper layer (domain ↔ database)
+* 🧠 Domain invariants (DomainInvariant)
+* 🪝 Event signaling via blinker
+* 🗄 SQLAlchemy + PostgreSQL integration
+* 📦 Facade layer for use cases
 
 ---
 
-## 📌 Domain layer
+# 🧠 Project Architecture
 
-Чистая бизнес-логика.
-**Не зависит от БД, фреймворков и инфраструктуры.**
+The project is structured according to **Clean Architecture principles**.
+
+---
+
+## 📌 Domain Layer
+
+Pure business logic.
+**Does not depend on database, frameworks, or infrastructure.**
 
 ### 👤 Users
 
 * `UserBase`, `Client`, `Admin`
-* инварианты (email, name, password)
-* статус пользователя
+* domain invariants (email, name, password)
+* user status handling
 
 ### 👛 Wallets
 
 * `DebitWallet`, `CreditWallet`
-* связь с пользователем
-* блокировка / закрытие
+* ownership relation
+* blocking / closing logic
 
 ### 💰 Balances
 
-* `RegularBalance` — одна валюта
-* `ForeignBalance` — несколько валют
-* хранение как `dict[currency -> amount]`
+* `RegularBalance` — single currency
+* `ForeignBalance` — multiple currencies
+* stored internally as `dict[currency -> amount]`
 
 ### 💳 Transactions
 
@@ -65,17 +63,17 @@ WalletManager — это backend-сервис для управления пол
 * `WithdrawTransaction`
 * `ExchangeTransaction`
 
-📌 В домене:
+📌 Domain layer contains:
 
-* нет ORM
-* нет SQL
-* только логика и инварианты
+* no ORM
+* no SQL
+* only business rules and invariants
 
 ---
 
-## 📌 Infrastructure layer
+## 📌 Infrastructure Layer
 
-Работа с БД и внешними зависимостями.
+Handles persistence and external dependencies.
 
 ### 🗄 Database (SQLAlchemy)
 
@@ -84,12 +82,14 @@ WalletManager — это backend-сервис для управления пол
 * `BalanceTable`
 * `TransactionTable`
 
+---
+
 ### 🔄 Mappers
 
-Преобразование:
+Responsible for transforming:
 
 ```
-Domain ↔ ORM (SQLAlchemy)
+Domain ↔ ORM (SQLAlchemy models)
 ```
 
 * `UserMapper`
@@ -97,21 +97,21 @@ Domain ↔ ORM (SQLAlchemy)
 * `BalanceMapper`
 * `TransactionMapper`
 
-📌 Важный момент:
+📌 Important detail:
 
-* ForeignBalance хранится **как несколько строк в БД**
-* и собирается обратно через grouping
+* `ForeignBalance` is stored as **multiple rows in DB**
+* and reconstructed via grouping
 
 ---
 
 ### 📦 Repositories
 
-Разделены на:
+Split into:
 
-* `commands` — запись (insert/update/delete)
-* `queries` — чтение
+* `commands` — write operations (insert/update/delete)
+* `queries` — read operations
 
-Пример:
+Examples:
 
 * `UserCommandsRepository`
 * `WalletQueriesRepository`
@@ -119,9 +119,9 @@ Domain ↔ ORM (SQLAlchemy)
 
 ---
 
-## ⚙️ Application / Use-cases layer
+## ⚙️ Application / Use-cases Layer
 
-Сценарии использования системы.
+Encapsulates business workflows.
 
 ### 👤 Users
 
@@ -150,69 +150,69 @@ Domain ↔ ORM (SQLAlchemy)
 
 ---
 
-## 🎭 Facade layer
+## 🎭 Facade Layer
 
-Упрощает работу с системой:
+Provides a simplified interface:
 
 * `UserServiceFacade`
 * `WalletServiceFacade`
 * `BalanceServiceFacade`
 * `TransactionServiceFacade`
 
-📌 Позволяет не работать напрямую с кучей сервисов
+📌 Avoids direct interaction with multiple services
 
 ---
 
 ## 🏭 Factory + Registry
 
-Для каждой сущности:
+Each domain has:
 
-* Factory — создаёт объект
-* Registry — хранит соответствие типа → класса
+* Factory — creates instances
+* Registry — maps type → class
 
-Пример:
+Example:
 
 ```
 BalanceTypesEnum.FOREIGN → ForeignBalance
 ```
 
-📌 Это даёт:
+📌 Benefits:
 
-* расширяемость
-* отсутствие if/else
-* гибкую регистрацию новых типов
+* extensibility
+* no hardcoded conditionals
+* easy addition of new types
 
 ---
 
-## 🧩 Core layer
+## 🧩 Core Layer
 
-Общие компоненты:
+Shared components:
 
 * 🔢 Enums (User, Wallet, Balance, Transaction)
-* ⚠️ DomainInvariant (валидация)
+* ⚠️ DomainInvariant (validation rules)
 * 🪝 Signals (blinker)
-* 🧰 utils / decorators
+* 🧰 utilities / decorators
 * 📊 logging
 
 ---
 
-# 🔥 Особенности реализации
+# 🔥 Implementation Highlights
 
-### 1. Мультивалютный баланс
+### 1. Multi-currency balance
 
-В БД:
+Stored in DB as:
 
 ```
 wallet_id | currency | amount
 ```
 
-В домене:
+In domain:
 
 ```
 { "BTC": 2, "USDT": 3, "TON": 5 }
 ```
 
-📌 Сборка происходит через:
+📌 Reconstructed using:
 
 ```
 grouped[obj.balance_id]
@@ -222,89 +222,87 @@ grouped[obj.balance_id]
 
 ### 2. Domain invariants
 
-Валидация прямо в домене:
+Validation happens inside domain models:
 
 ```python
 DomainInvariant.no_empty(...)
 DomainInvariant.is_instance(...)
 ```
 
-📌 Гарантирует корректное состояние объектов
+📌 Ensures consistent object state
 
 ---
 
 ### 3. Signals (blinker)
 
-При изменении:
+On state change:
 
 ```python
 user_upgrade_signal.send(...)
 ```
 
-📌 Можно легко добавить:
+📌 Enables:
 
-* логирование
-* аудит
-* события
-
----
-
-### 4. Mapper слой
-
-Ты явно разделил:
-
-```
-DB модель ≠ Domain модель
-```
-
-📌 Это очень сильное архитектурное решение
+* logging
+* auditing
+* event-driven extensions
 
 ---
 
-# 🧩 Используемые паттерны
+### 4. Mapper layer
+
+Clear separation:
+
+```
+Database model ≠ Domain model
+```
+
+📌 Prevents ORM leakage into business logic
+
+---
+
+# 🧩 Design Patterns Used
 
 * 🏭 Factory Pattern
 * 🗂 Registry Pattern
 * 🎭 Facade Pattern
 * 🧱 Mapper Pattern
-* 🪝 Observer (через signals)
-* 🧠 DDD-lite (агрегаты + инварианты)
+* 🪝 Observer Pattern (via signals)
+* 🧠 DDD-lite principles
 
 ---
 
-# 🔮 Возможные улучшения
+# 🔮 Possible Improvements
 
-Если идти дальше:
+### 🔹 Architecture
 
-### 🔹 Архитектура
+* Unit of Work pattern
+* CQRS (separate read/write models)
+* Domain Events (instead of direct signals)
 
-* Unit of Work
-* CQRS (разделить read/write модели)
-* Domain Events (вместо прямых сигналов)
+### 🔹 Infrastructure
 
-### 🔹 Инфраструктура
+* Proper Alembic migration setup
+* Async SQLAlchemy
+* Redis (caching / locks)
 
-* Alembic migrations (нормально настроить)
-* async SQLAlchemy
-* Redis (кэш / блокировки)
+### 🔹 Dependency Injection
 
-### 🔹 DI
+* Integrate DI container (e.g. Dishka)
 
-* подключить DI (например Dishka)
+### 🔹 API Layer
 
-### 🔹 API
-
-* FastAPI слой
-* Pydantic DTO для входа/выхода
+* FastAPI integration
+* Pydantic DTOs for request/response
 
 ---
 
-# 🎯 Цель проекта
+# 🎯 Project Goal
 
-Проект демонстрирует:
+This project demonstrates:
 
-* умение строить **сложную backend архитектуру**
-* разделение ответственности
-* работу с ORM без протекания в домен
-* применение паттернов на практике
-* подготовку к production-level системам
+* strong backend architecture design skills
+* separation of concerns
+* clean domain modeling
+* practical usage of design patterns
+* building scalable, production-ready systems
