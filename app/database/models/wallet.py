@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey, Enum
+from sqlalchemy import ForeignKey, Enum, Index
 
 from app.database.base import Base
 from app.common.enums.wallet_enums import WalletTypesEnum
@@ -14,6 +14,9 @@ class WalletTable(Base):
     """Класс таблица кошельков"""
 
     __tablename__ = 'wallets'
+    __table_args__ = (
+        Index('owner_id_index', 'owner_id'),
+    )
 
     wallet_id: Mapped[str] = mapped_column(primary_key=True)
     pin: Mapped[str] = mapped_column(nullable=False)

@@ -1,0 +1,8 @@
+# Docker
+Dockerfile linguist-detectable=true
+
+# SQL migrations
+*.sql linguist-detectable=true
+
+# Templates (mako/jinja)
+*.mako linguist-detectable=true
