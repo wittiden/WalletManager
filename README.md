@@ -1,173 +1,310 @@
 
+
+
 # 🪙 WalletManager
 
-WalletManager — это backend-сервис для управления кошельками, пользователями и транзакциями. Проект построен на принципах **Clean Architecture / DDD-lite** и предоставляет гибкий слой абстракции для работы с бизнес-логикой, валидацией и хранением данных.
+WalletManager — это backend-сервис для управления пользователями, кошельками, балансами и транзакциями.
+Проект построен на принципах **Clean Architecture / DDD-lite** с явным разделением домена, инфраструктуры и сценариев использования.
 
 ---
 
 # 🚀 Основные возможности
 
-* 📦 Управление транзакциями (CRUD операции)
-* 👤 Управление пользователями (регистрация, хранение, обработка данных)
-* 👛 Управление кошельками (балансы, привязка к пользователям, операции)
-* 🏗 Реестр типов сущностей (Transaction / User / Wallet Registry)
-* 🏭 Раздельные фабрики для создания объектов каждого домена
-* 🧾 Валидация входных данных через слой схем (Pydantic-based DTO)
-* ⚡ In-memory репозитории (легко заменяются на PostgreSQL / Redis)
-* ❗ Доменные исключения вместо использования `None`
-* 🧩 Расширяемая архитектура под новые типы операций и бизнес-сущности
-* 💱 Встроенные парсеры валют и подготовка к интеграции с rate providers
+* 👤 Управление пользователями (регистрация, логин, блокировка)
+* 👛 Управление кошельками (создание, блокировка, закрытие)
+* 💰 Управление балансами:
+
+  * обычные (1 валюта)
+  * мультивалютные (несколько валют в одном кошельке)
+* 💳 Управление транзакциями:
+
+  * пополнение
+  * вывод
+  * обмен
+* 🏭 Factory + Registry для всех доменных сущностей
+* 🔄 Mapper слой (domain ↔ database)
+* 🧠 Инварианты домена (DomainInvariant)
+* 🪝 Сигналы через blinker (реакция на изменения)
+* 🗄 SQLAlchemy + PostgreSQL
+* 📦 Facade слой для use-cases
 
 ---
 
 # 🧠 Архитектура проекта
 
-Проект разделён на несколько ключевых слоёв в соответствии с принципами **Clean Architecture / DDD-lite**.
+Проект разделён на слои в стиле **Clean Architecture**.
 
 ---
 
 ## 📌 Domain layer
 
-Содержит бизнес-сущности и инварианты предметной области. Не зависит от инфраструктуры.
-
-### 💳 Transactions
-
-* `TransactionBase` — базовая доменная модель транзакции
-* `TransactionTypesEnum` — типы транзакций
-* `TransactionStatusesEnum` — статусы операций
+Чистая бизнес-логика.
+**Не зависит от БД, фреймворков и инфраструктуры.**
 
 ### 👤 Users
 
-* `UserBase` — доменная модель пользователя
-* базовые правила и ограничения пользователя
+* `UserBase`, `Client`, `Admin`
+* инварианты (email, name, password)
+* статус пользователя
 
 ### 👛 Wallets
 
-* `WalletBase` — доменная модель кошелька
-* баланс, ownership и связи с пользователями
+* `DebitWallet`, `CreditWallet`
+* связь с пользователем
+* блокировка / закрытие
 
----
+### 💰 Balances
 
-## 📌 Application layer
-
-Слой бизнес-логики и оркестрации доменных объектов.
+* `RegularBalance` — одна валюта
+* `ForeignBalance` — несколько валют
+* хранение как `dict[currency -> amount]`
 
 ### 💳 Transactions
 
-* `TransactionFactory` — создание транзакций по типу
-* `TransactionRegistry` — регистрация доступных типов транзакций
+* `DepositTransaction`
+* `WithdrawTransaction`
+* `ExchangeTransaction`
 
-### 👤 Users
+📌 В домене:
 
-* `UserFactory` — создание пользователей
-* `UserService` — бизнес-операции над пользователями
-
-### 👛 Wallets
-
-* `WalletFactory` — создание кошельков
-* `WalletService` — бизнес-логика кошельков (балансы, операции)
-
----
-
-## ⚙️ Use-cases layer
-
-Слой сценариев использования системы (application orchestration).
-
-* `CreateTransactionUseCase`
-* `RegisterUserUseCase`
-* `CreateWalletUseCase`
-* `TransferBetweenWalletsUseCase`
-* `ProcessTransactionUseCase`
-
-📌 Отвечает за описание бизнес-процессов, а не реализацию деталей.
-
----
-
-## 📌 Schemas layer (DTO / Validation layer)
-
-Слой входных и выходных моделей на базе Pydantic.
-
-### 💳 Transactions schemas
-
-* `CreateTransactionSchema`
-* `TransactionResponseSchema`
-
-### 👤 Users schemas
-
-* `CreateUserSchema`
-* `UserResponseSchema`
-
-### 👛 Wallets schemas
-
-* `CreateWalletSchema`
-* `WalletResponseSchema`
-
-📌 Используется для API и строгой валидации данных.
+* нет ORM
+* нет SQL
+* только логика и инварианты
 
 ---
 
 ## 📌 Infrastructure layer
 
-Слой хранения данных и внешних интеграций.
+Работа с БД и внешними зависимостями.
 
-### 💳 Transactions
+### 🗄 Database (SQLAlchemy)
 
-* `TransactionRepository` — in-memory storage
+* `UserTable`
+* `WalletTable`
+* `BalanceTable`
+* `TransactionTable`
+
+### 🔄 Mappers
+
+Преобразование:
+
+```
+Domain ↔ ORM (SQLAlchemy)
+```
+
+* `UserMapper`
+* `WalletMapper`
+* `BalanceMapper`
+* `TransactionMapper`
+
+📌 Важный момент:
+
+* ForeignBalance хранится **как несколько строк в БД**
+* и собирается обратно через grouping
+
+---
+
+### 📦 Repositories
+
+Разделены на:
+
+* `commands` — запись (insert/update/delete)
+* `queries` — чтение
+
+Пример:
+
+* `UserCommandsRepository`
+* `WalletQueriesRepository`
+* `BalanceCommandsRepository`
+
+---
+
+## ⚙️ Application / Use-cases layer
+
+Сценарии использования системы.
 
 ### 👤 Users
 
-* `UserRepository` — хранилище пользователей
+* `CreateUserService`
+* `LoginUserService`
+* `BlockUserService`
+* `CloseUserService`
 
 ### 👛 Wallets
 
-* `WalletRepository` — хранилище кошельков
+* `CreateWalletService`
+* `BlockWalletService`
+* `CloseWalletService`
 
-### 💱 Parsers
+### 💰 Balances
 
-* `currency_parser.py` — парсинг валют
-* подготовка к интеграции с external rate providers
+* `CreateBalanceService`
+* `FreezeBalanceService`
+* `ShowBalanceService`
 
----
+### 💳 Transactions
 
-## 📌 Core layer
-
-Общие компоненты системы:
-
-* 🔢 Enums (transactions / users / wallets)
-* 🧰 Utilities (helpers, decorators, parsers)
-* ⚠️ Validations (exceptions, invariants)
-* 📊 Logging configuration
+* `CreateTransactionService`
+* `ShowTransactionService`
+* `SortTransactionService`
 
 ---
 
-# 🧩 Используемые архитектурные паттерны
+## 🎭 Facade layer
 
-Проект реализует комбинацию современных паттернов:
+Упрощает работу с системой:
 
-* 🏭 Factory Pattern — создание объектов домена
-* 🗂 Registry Pattern — динамическая регистрация типов
-* 🎭 Strategy Pattern — вариативное поведение кошельков/операций
-* 🧱 Facade Pattern — упрощение взаимодействия с подсистемами
-* 🪝 Decorator Pattern — расширение логики без изменения кода
+* `UserServiceFacade`
+* `WalletServiceFacade`
+* `BalanceServiceFacade`
+* `TransactionServiceFacade`
+
+📌 Позволяет не работать напрямую с кучей сервисов
+
+---
+
+## 🏭 Factory + Registry
+
+Для каждой сущности:
+
+* Factory — создаёт объект
+* Registry — хранит соответствие типа → класса
+
+Пример:
+
+```
+BalanceTypesEnum.FOREIGN → ForeignBalance
+```
+
+📌 Это даёт:
+
+* расширяемость
+* отсутствие if/else
+* гибкую регистрацию новых типов
+
+---
+
+## 🧩 Core layer
+
+Общие компоненты:
+
+* 🔢 Enums (User, Wallet, Balance, Transaction)
+* ⚠️ DomainInvariant (валидация)
+* 🪝 Signals (blinker)
+* 🧰 utils / decorators
+* 📊 logging
+
+---
+
+# 🔥 Особенности реализации
+
+### 1. Мультивалютный баланс
+
+В БД:
+
+```
+wallet_id | currency | amount
+```
+
+В домене:
+
+```
+{ "BTC": 2, "USDT": 3, "TON": 5 }
+```
+
+📌 Сборка происходит через:
+
+```
+grouped[obj.balance_id]
+```
+
+---
+
+### 2. Domain invariants
+
+Валидация прямо в домене:
+
+```python
+DomainInvariant.no_empty(...)
+DomainInvariant.is_instance(...)
+```
+
+📌 Гарантирует корректное состояние объектов
+
+---
+
+### 3. Signals (blinker)
+
+При изменении:
+
+```python
+user_upgrade_signal.send(...)
+```
+
+📌 Можно легко добавить:
+
+* логирование
+* аудит
+* события
+
+---
+
+### 4. Mapper слой
+
+Ты явно разделил:
+
+```
+DB модель ≠ Domain модель
+```
+
+📌 Это очень сильное архитектурное решение
+
+---
+
+# 🧩 Используемые паттерны
+
+* 🏭 Factory Pattern
+* 🗂 Registry Pattern
+* 🎭 Facade Pattern
+* 🧱 Mapper Pattern
+* 🪝 Observer (через signals)
+* 🧠 DDD-lite (агрегаты + инварианты)
 
 ---
 
 # 🔮 Возможные улучшения
 
-* 🗄 PostgreSQL / SQLAlchemy repository layer
-* ⚡ Async architecture (FastAPI integration)
-* 📡 Event-driven system (domain events)
-* 🔄 Unit of Work pattern
-* 📊 CQRS (разделение read/write моделей)
-* 🌐 External exchange rate API integration
+Если идти дальше:
+
+### 🔹 Архитектура
+
+* Unit of Work
+* CQRS (разделить read/write модели)
+* Domain Events (вместо прямых сигналов)
+
+### 🔹 Инфраструктура
+
+* Alembic migrations (нормально настроить)
+* async SQLAlchemy
+* Redis (кэш / блокировки)
+
+### 🔹 DI
+
+* подключить DI (например Dishka)
+
+### 🔹 API
+
+* FastAPI слой
+* Pydantic DTO для входа/выхода
 
 ---
 
 # 🎯 Цель проекта
 
-Проект создан как демонстрация:
+Проект демонстрирует:
 
-* архитектурного мышления в backend-разработке
-* применения Clean Architecture / DDD-lite
-* работы с паттернами проектирования
-* построения расширяемых систем уровня production backend
+* умение строить **сложную backend архитектуру**
+* разделение ответственности
+* работу с ORM без протекания в домен
+* применение паттернов на практике
+* подготовку к production-level системам
