@@ -4,7 +4,7 @@ from app.common.enums.balance_enums import BalanceTypesEnum
 from app.database.models import BalanceTable
 
 if TYPE_CHECKING:
-    from app.infrastructure.balances.domain import BalanceBase, RegularBalance, ForeignBalance
+    from app.infrastructure.balances.domain import BalanceBase
     from app.infrastructure.balances.factory import BalanceFactory
 
 
@@ -35,14 +35,9 @@ class BalanceMapper:
         raise
 
     @staticmethod
-    def domain_to_table(balance: 'RegularBalance') -> 'BalanceTable':
+    def domain_to_table(balance: 'BalanceBase') -> 'BalanceTable | list[BalanceTable]':
         if balance.balance_type == BalanceTypesEnum.REGULAR:
             return BalanceTable(balance_id=balance.item_id, wallet_id=balance.wallet_id, is_frozen=balance.is_frozen, balance_type=balance.balance_type, currency=balance.currency, amount=balance.amount)
-        raise
-
-    @staticmethod
-    def domain_to_tables(balance: 'ForeignBalance') -> list['BalanceTable']:
-        if balance.balance_type == BalanceTypesEnum.FOREIGN:
-
+        elif balance.balance_type == BalanceTypesEnum.FOREIGN:
             return [BalanceTable(balance_id=balance.item_id, wallet_id=balance.wallet_id, is_frozen=balance.is_frozen, balance_type=balance.balance_type, currency=currency, amount=amount) for currency, amount in zip(balance.currencies, balance.amounts)]
         raise

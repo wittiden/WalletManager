@@ -2,10 +2,11 @@ from typing import TYPE_CHECKING, Any
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import select, delete
 
+from app.common.enums.balance_enums import BalanceTypesEnum
 from app.database.models import BalanceTable
 
 if TYPE_CHECKING:
-    from app.infrastructure.balances.domain import ForeignBalance, BalanceBase, RegularBalance
+    from app.infrastructure.balances.domain import BalanceBase
     from app.infrastructure.balances.repository.mapper import BalanceMapper
 
 
@@ -16,25 +17,26 @@ class BalanceCommandsRepository:
         self._session_factory = session_factory
         self._balance_mapper = balance_mapper
 
-    def insert_balance_info(self, balance: 'RegularBalance') -> None:
+    def insert_balance_info(self, balance: 'BalanceBase') -> None:
         with self._session_factory() as session:
-            session.add(self._balance_mapper.domain_to_table(balance))
+            if balance.balance_type == BalanceTypesEnum.REGULAR:
+                session.add(self._balance_mapper.domain_to_table(balance))
+            elif balance.balance_type == BalanceTypesEnum.FOREIGN:
+                session.add_all(self._balance_mapper.domain_to_table(balance))
+            else:
+                raise
+
             session.commit()
 
-    def insert_balances_info(self, balance: 'ForeignBalance') -> None:
-        with self._session_factory() as session:
-            session.add_all(self._balance_mapper.domain_to_tables(balance))
-            session.commit()
-
-    def delete_balance_info(self, balance: 'RegularBalance') -> None:
+    def delete_balance_info(self, balance: 'BalanceBase') -> None:
         with self._session_factory() as session:
             session.execute(delete(BalanceTable).where(BalanceTable.wallet_id == balance.wallet_id))
             session.commit()
 
     def upgrade_balance_info(self, balance: 'BalanceBase', new_balance_params: dict[str, Any]) -> None:
         with self._session_factory() as session:
-            objs = session.execute(select(BalanceTable).where(BalanceTable.wallet_id == balance.wallet_id))
-            for key, value in new_balance_params:
+            objs = session.execute(select(BalanceTable).where(BalanceTable.wallet_id == balance.wallet_id)).all()
+            for key, value in new_balance_params.items():
                 for obj in objs:
                     setattr(obj, key, value)
 

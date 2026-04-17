@@ -7,7 +7,8 @@ from app.infrastructure.balances.domain import RegularBalance, ForeignBalance
 from app.infrastructure.balances.factory import BalanceFactory, BalanceRegistry
 from app.infrastructure.balances.repository.commands import BalanceCommandsRepository
 from app.infrastructure.balances.repository.mapper import BalanceMapper
-from app.infrastructure.balances.repository.queries import BalanceQueriesRepository
+from app.infrastructure.balances.use_cases import CreateBalanceService, ShowBalanceService, FreezeBalanceService, \
+    BalanceServiceFacade
 from app.infrastructure.transactions.repository.mapper import TransactionMapper
 from app.infrastructure.users.domain import Client, Admin
 from app.infrastructure.users.factory import UserRegistrations, UserFactory
@@ -83,6 +84,11 @@ def activate_transaction_service_facade(transaction_factory: 'TransactionFactory
     sort_transaction_service = SortTransactionService(transaction_queries_repository)
     return TransactionServiceFacade(create_transaction_service, show_transaction_service, sort_transaction_service)
 
+def activate_balance_service_facade(balance_factory: 'BalanceFactory', balance_commands_repository: 'BalanceCommandsRepository', wallet_queries_repository: 'WalletQueriesRepository') -> 'BalanceServiceFacade':
+    create_balance_service = CreateBalanceService(balance_factory, balance_commands_repository)
+    show_balance_service = ShowBalanceService(wallet_queries_repository)
+    freeze_balance_service = FreezeBalanceService(wallet_queries_repository, balance_commands_repository)
+    return BalanceServiceFacade(create_balance_service, show_balance_service, freeze_balance_service)
 
 def main() -> None:
 
@@ -103,35 +109,15 @@ def main() -> None:
     user_commands_repository = UserCommandsRepository(session_factory, user_mapper)
     user_queries_repository = UserQueriesRepository(session_factory, user_mapper, wallet_mapper)
     wallet_commands_repository = WalletCommandsRepository(session_factory, wallet_mapper)
-    wallet_queries_repository = WalletQueriesRepository(session_factory, wallet_mapper)
+    wallet_queries_repository = WalletQueriesRepository(session_factory, wallet_mapper, balance_mapper)
     transaction_commands_repository = TransactionCommandsRepository(session_factory, transaction_mapper)
     transaction_queries_repository = TransactionQueriesRepository(session_factory, transaction_mapper)
     balance_commands_repository = BalanceCommandsRepository(session_factory, balance_mapper)
-    balance_queries_repository = BalanceQueriesRepository(session_factory, balance_mapper)
 
     user_service_facade = activate_user_service_facade(user_factory, user_commands_repository, user_queries_repository)
     wallet_service_facade = activate_wallet_service_facade(wallet_factory, wallet_commands_repository, wallet_queries_repository, user_commands_repository)
     transaction_service_facade = activate_transaction_service_facade(transaction_factory, transaction_commands_repository, transaction_queries_repository)
-
-
-
-
-    # user_schema = CreateUserSchema(key=UserStatusesEnum.CLIENT, name='test', email='test@y.ru', password='gk;wjgli7gylbn^')
-    # user = user_service_facade.create_user(user_schema)
-    # login_schema = LoginUserSchema(email='test@y.ru', password='gk;wjgli7gylbn^')
-    # user = user_service_facade.login_user(login_schema)
-    # print(user)
-
-    # wallets = user_queries_repository.select_my_wallets(user)
-    # for w in wallets:
-    #     print(w)
-    #     print('\n')
-
-    # wallet_schema = CreateWalletSchema(key=WalletTypesEnum.CREDIT, pin='1234')
-    # wallet = wallet_service_facade.create_wallet(user, wallet_schema)
-    # print(wallet)
-    # wqr = WalletQueriesRepository(session_factory, wallet_mapper)
-    # print(wqr.select_my_wallets(user))
+    balance_service_facade = activate_balance_service_facade(balance_factory, balance_commands_repository, wallet_queries_repository)
 
 
 if __name__ == '__main__':

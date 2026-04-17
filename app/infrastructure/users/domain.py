@@ -85,7 +85,7 @@ class Client(UserBase):
         self._status = UserStatusesEnum.CLIENT
 
     def __repr__(self) -> str:
-        return f'{super().__repr__()}\n'
+        return f'{super().__repr__()}'
 
     __str__ = __repr__
 
@@ -100,6 +100,6 @@ class Admin(UserBase):
         self._status = UserStatusesEnum.ADMIN
 
     def __repr__(self) -> str:
-        return f'{super().__repr__()}\n'
+        return f'{super().__repr__()}'
 
     __str__ = __repr__

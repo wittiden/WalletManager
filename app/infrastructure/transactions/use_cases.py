@@ -26,7 +26,7 @@ class TransactionServiceFacade:
         self._transaction_sort_service = transaction_sort_service
 
     @debug_log
-    @info_log(['', 'Транзакция создана'])
+    @info_log(strat_info=None, end_info='Транзакция создана')
     def create_transaction(self, schema: 'CreateDepositTransactionSchema | CreateWithdrawTransactionSchema | CreateExchangeTransactionSchema'):
         if schema.operation_type == TransactionTypesEnum.DEPOSIT:
             obj = self._transaction_create_service.create_deposit_transaction(schema.operation_type, schema.from_address, schema.to_address, schema.amount, schema.operation_status)
@@ -40,17 +40,17 @@ class TransactionServiceFacade:
         return obj
 
     @debug_log
-    @info_log(['Информация о транзакции:', ''])
+    @info_log(strat_info='Информация о транзакции:', end_info=None)
     def show_transaction(self, find_transaction_id: str) -> 'TransactionBase':
         return self._transaction_show_service.show_transaction(find_transaction_id)
 
     @debug_log
-    @info_log(['Информация о транзакциях:', ''])
+    @info_log(strat_info='Информация о транзакциях:', end_info=None)
     def show_all_transactions(self) -> list['TransactionBase']:
         return self._transaction_show_service.show_all_transactions()
 
     @debug_log
-    @info_log(['Отсортированные транзакции:', ''])
+    @info_log(strat_info='Отсортированная информация о транзакциях:', end_info=None)
     def sort_all_transactions(self, order_by_param: str) -> list['TransactionBase']:
         return self._transaction_sort_service.sort_all_transactions(order_by_param)
 

@@ -28,47 +28,47 @@ class WalletServiceFacade:
         self._close_wallet_service = close_wallet_service
 
     @debug_log
-    @info_log(['','Пользователь создан'])
+    @info_log(strat_info=None, end_info='Счет создан')
     def create_wallet(self, user: 'UserBase', schema: 'CreateWalletSchema') -> 'WalletBase':
         return self._create_wallet_service.create_wallet(user, schema.key, schema.pin)
 
     @debug_log
-    @info_log(['Информация о кошельке:',''])
+    @info_log(strat_info='Информация о счете пользователя:', end_info=None)
     def show_wallet(self, user: 'UserBase', find_wallet_id: str) -> 'WalletBase':
         return self._show_wallet_service.show_wallet(user, find_wallet_id)
 
     @debug_log
-    @info_log(['Информация о вашем кошельке:',''])
+    @info_log(strat_info='Информация о ваших счетах:', end_info=None)
     def show_my_wallets(self, user: 'UserBase') -> list['WalletBase']:
         return self._show_wallet_service.show_my_wallets(user)
 
     @debug_log
-    @info_log(['Информация о кошельках:',''])
+    @info_log(strat_info='Информация о счетах пользователей:', end_info=None)
     def show_all_wallets(self, user: 'UserBase') -> list['WalletBase']:
         return self._show_wallet_service.show_all_wallets(user)
 
     @debug_log
-    @info_log(['Отсортированные кошельки:',''])
+    @info_log(strat_info='Отсортированная информация о счетах пользователей:', end_info=None)
     def sort_all_wallets(self, user: 'UserBase', order_by_param: str) -> list['WalletBase']:
         return self._sort_wallet_service.sort_all_wallets(user, order_by_param)
 
     @debug_log
-    @info_log(['Ваши отсортированные кошельки:',''])
+    @info_log(strat_info='Отсортированная информация о счете пользователя:', end_info=None)
     def sort_my_wallets(self, user: 'UserBase', order_by_param: str) -> list['WalletBase']:
         return self._sort_wallet_service.sort_my_wallets(user, order_by_param)
 
     @debug_log
-    @info_log(['','Кошелек заблокирован'])
+    @info_log(strat_info=None, end_info='Счет пользователя заблокирован')
     def block_wallet(self, user: 'UserBase', find_user_id: str) -> None:
         self._block_wallet_service.block_wallet(user, find_user_id)
 
     @debug_log
-    @info_log(['','Кошелек разблокирован'])
+    @info_log(strat_info=None, end_info='Счет пользователя разблокирован')
     def unblock_wallet(self, user: 'UserBase', find_user_id: str) -> None:
         self._block_wallet_service.unblock_wallet(user, find_user_id)
 
     @debug_log
-    @info_log(['','Кошелек закрыт и удален с вашего аккаунта'])
+    @info_log(strat_info=None, end_info='Ваш счет закрыт')
     def close_wallet(self, user: 'UserBase', schema: 'CloseWalletSchema') -> None:
         self._close_wallet_service.close_my_wallet(user, schema.pin, schema.address)
 

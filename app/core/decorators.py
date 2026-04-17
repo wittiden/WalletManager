@@ -17,13 +17,15 @@ def debug_log(func: Callable[Concatenate[Self, P], T]) -> Callable[Concatenate[S
     return wrapped
 
 
-def info_log(info: list[Any]) -> Callable[Concatenate[Self, P], T]:
+def info_log(strat_info: str | None, end_info: str | None) -> Callable[Concatenate[Self, P], T]:
     def wrapper(func: Callable[Concatenate[Self, P], T]) -> T:
         @functools.wraps(func)
         def wrapped(self: Self, *args: P.args, **kwargs: P.kwargs) -> T:
-            logger.info(info[0])
+            if strat_info is not None:
+                logger.info(strat_info)
             result = func(self, *args, **kwargs)
-            logger.info(info[-1])
+            if end_info is not None:
+                logger.info(end_info)
             return result
         return wrapped
     return wrapper

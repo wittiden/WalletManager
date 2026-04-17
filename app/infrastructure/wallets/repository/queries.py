@@ -2,20 +2,23 @@ from typing import TYPE_CHECKING
 from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
 
-from app.database.models import WalletTable
+from app.database.models import WalletTable, BalanceTable
+from app.infrastructure.balances.domain import BalanceBase
 
 if TYPE_CHECKING:
     from app.infrastructure.users.domain import UserBase
     from app.infrastructure.wallets.domain import WalletBase
     from app.infrastructure.wallets.repository.mapper import WalletMapper
+    from app.infrastructure.balances.repository.mapper import BalanceMapper
 
 
 class WalletQueriesRepository:
     """Класс репозиторий select операций кошельков"""
 
-    def __init__(self, session_factory: sessionmaker, wallet_mapper: 'WalletMapper') -> None:
+    def __init__(self, session_factory: sessionmaker, wallet_mapper: 'WalletMapper', balance_mapper: 'BalanceMapper') -> None:
         self._session_factory = session_factory
         self._wallet_mapper = wallet_mapper
+        self._balance_mapper = balance_mapper
 
     def select_wallet(self, find_wallet_id: str) -> 'WalletBase':
         with self._session_factory() as session:
@@ -66,11 +69,21 @@ class WalletQueriesRepository:
                 return self._wallet_mapper.table_to_domain(obj)
             raise
 
+    def select_my_balance(self, wallet: 'WalletBase') -> 'BalanceBase':
+        with self._session_factory() as session:
+            obj = session.execute(select(BalanceTable).where(BalanceTable.wallet_id == wallet.item_id)).one_or_none()
+            return self._balance_mapper.table_to_domain(obj)
 
-    # def select_balance(self, wallet: 'WalletBase') -> dict[str, Decimal] | None:
-    #     with self._session_factory() as session:
-    #         obj = session.get(WalletTable, wallet.item_id)
-    #         if obj:
-    #             balance_objs = session.execute(select(BalanceTable).where(BalanceTable.wallet_id == obj.wallet_id)).scalars().all()
-    #             if wallet.status == WalletTypesEnum.REGULAR:
+    def select_my_balances(self, wallet) -> 'BalanceBase':
+        with self._session_factory() as session:
 
+            objs = session.execute(select(BalanceTable).where(BalanceTable.wallet_id == wallet.item_id)).scalars().all()
+
+            return self._balance_mapper.tables_to_domain(objs)
+
+    def select_balances(self, wallet_id: str) -> 'BalanceBase':
+        with self._session_factory() as session:
+
+            objs = session.execute(select(BalanceTable).where(BalanceTable.wallet_id == wallet_id)).scalars().all()
+
+            return self._balance_mapper.tables_to_domain(objs)

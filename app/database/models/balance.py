@@ -18,7 +18,7 @@ class BalanceTable(Base):
     balance_id: Mapped[str] = mapped_column(primary_key=True)
     wallet_id: Mapped[str] = mapped_column(ForeignKey('wallets.wallet_id'), nullable=False)
     is_frozen: Mapped[bool] = mapped_column(default=False, nullable=False)
-    currency: Mapped[str] = mapped_column(nullable=False)
+    currency: Mapped[str] = mapped_column(primary_key=True)
     amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     balance_type: Mapped['BalanceTypesEnum'] = mapped_column(Enum(BalanceTypesEnum, name='balance_type_enum'), default=BalanceTypesEnum.UNKNOWN, nullable=False)
 

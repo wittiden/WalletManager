@@ -4,6 +4,7 @@ from blinker import Signal
 
 from app.common.enums.balance_enums import BalanceTypesEnum
 from app.common.mixins import MixinId
+from app.core.invariants import DomainInvariant
 from app.core.utils import blink_func
 
 upgrade_signal = Signal()
@@ -21,6 +22,8 @@ class BalanceBase(MixinId):
 
     def __post_init__(self) -> None:
         super().__init__()
+
+        DomainInvariant.no_empty('wallet_id', self._wallet_id)
 
     @property
     def wallet_id(self) -> str:
@@ -57,7 +60,7 @@ class BalanceBase(MixinId):
         upgrade_signal.send(self, field='wallet_id', old=old_value, new=value)
 
     def __repr__(self) -> str:
-        return f'{self._balance_type} #{self.item_id} -> wallet_id: #{self._wallet_id}\nIs_frozen: {self._is_frozen}'
+        return f'{self._balance_type.value} #{self.item_id} -> wallet_id: #{self._wallet_id}\nIs_frozen: {self._is_frozen}'
 
     __str__ = __repr__
 
@@ -73,6 +76,8 @@ class RegularBalance(BalanceBase):
         super().__post_init__()
 
         self._balance_type = BalanceTypesEnum.REGULAR
+        DomainInvariant.no_empty('currency', self._currency)
+
         self._balance: dict[str, Decimal] = {self._currency: self._amount}
 
     @property
@@ -96,7 +101,7 @@ class RegularBalance(BalanceBase):
         upgrade_signal.send(self, field='currency', old=old_value, new=value)
 
     def __repr__(self) -> str:
-        return f'{super().__repr__()}'
+        return f'{super().__repr__()}\n{self._balance}'
 
     __str__ = __repr__
 
@@ -112,6 +117,10 @@ class ForeignBalance(BalanceBase):
         super().__post_init__()
 
         self._balance_type = BalanceTypesEnum.FOREIGN
+
+        DomainInvariant.no_none('amounts', self._amounts)
+        DomainInvariant.no_none('currencies', self._currencies)
+
         self._balance: dict[str, Decimal] = {currency: amount for amount, currency in zip(self._amounts, self._currencies)}
 
     @property
@@ -135,6 +144,6 @@ class ForeignBalance(BalanceBase):
         upgrade_signal.send(self, field='currencies', old=old_value, new=value)
 
     def __repr__(self) -> str:
-        return f'{super().__repr__()}'
+        return f'{super().__repr__()}\n{self._balance}'
 
     __str__ = __repr__

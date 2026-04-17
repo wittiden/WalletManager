@@ -26,6 +26,8 @@ class WalletBase(MixinId):
         super().__init__()
 
         DomainInvariant.no_empty('pin', self._pin)
+        DomainInvariant.no_empty('owner_id', self._owner_id)
+        DomainInvariant.no_empty('address', self._address)
 
     @property
     def pin(self) -> str:

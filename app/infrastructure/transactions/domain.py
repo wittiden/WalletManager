@@ -5,6 +5,7 @@ from blinker import Signal
 
 from app.common.enums.transaction_enums import TransactionStatusesEnum, TransactionTypesEnum
 from app.common.mixins import MixinId
+from app.core.invariants import DomainInvariant
 from app.core.utils import blink_func
 
 transaction_update_signal = Signal()
@@ -24,6 +25,9 @@ class TransactionBase(MixinId):
 
     def __post_init__(self) -> None:
         super().__init__()
+
+        DomainInvariant.no_empty('from_address', self._from_address)
+        DomainInvariant.no_empty('to_address', self._to_address)
 
     @property
     def from_address(self) -> str:
@@ -139,6 +143,9 @@ class ExchangeTransaction(TransactionBase):
         super().__post_init__()
 
         self._operation_type = TransactionTypesEnum.EXCHANGE
+
+        DomainInvariant.no_empty('from_currency', self._from_currency)
+        DomainInvariant.no_empty('to_currency', self._to_currency)
 
     @property
     def exchange_fee(self) -> Decimal:

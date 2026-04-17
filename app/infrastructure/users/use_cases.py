@@ -28,47 +28,47 @@ class UserServiceFacade:
         self._close_user_service = close_user_service
 
     @debug_log
-    @info_log(['', 'Пользователь создан'])
+    @info_log(strat_info=None, end_info='Пользователь создан')
     def create_user(self, schema: 'CreateUserSchema') -> 'UserBase':
         return self._create_user_service.create_user(schema.key, schema.name, schema.email, schema.password)
 
     @debug_log
-    @info_log(['', 'Вы вошли в аккаунт'])
+    @info_log(strat_info=None, end_info='Вы вошли в аккаунт')
     def login_user(self, schema: 'LoginUserSchema') -> 'UserBase':
         return self._login_user_service.login_user(schema.email, schema.password)
 
     @debug_log
-    @info_log(['Информация о пользователе:', ''])
+    @info_log(strat_info='Информация о пользователе:', end_info=None)
     def show_user(self, user: 'UserBase', find_user_id: str) -> 'UserBase':
         return self._show_user_service.show_user(user, find_user_id)
 
     @debug_log
-    @info_log(['Информация о пользователях:', ''])
+    @info_log(strat_info='Информация о пользователях:', end_info=None)
     def show_all_users(self, user: 'UserBase') -> list['UserBase']:
         return self._show_user_service.show_all_users(user)
 
     @debug_log
-    @info_log(['Информация о моем пользователе:', ''])
+    @info_log(strat_info='Информация о вашем пользователе:', end_info=None)
     def show_my_user(self, user: 'UserBase') -> 'UserBase':
         return self._show_user_service.show_my_user(user)
 
     @debug_log
-    @info_log(['Сортировка пользователей:', ''])
+    @info_log(strat_info='Отсортированная информация о пользователях:', end_info=None)
     def sort_users(self, user: 'UserBase', order_by_param: str) -> list:
         return self._sort_user_service.sort_users(user, order_by_param)
 
     @debug_log
-    @info_log(['', 'Пользователь заблокирован'])
+    @info_log(strat_info=None, end_info='Пользователь заблокирован')
     def block_user(self, user: 'UserBase', find_user_id: str) -> None:
         self._block_user_service.block_user(user, find_user_id)
 
     @debug_log
-    @info_log(['', 'Пользователь разблокирован'])
+    @info_log(strat_info=None, end_info='Пользователь разблокирован')
     def unblock_user(self, user: 'UserBase', find_user_id: str) -> None:
         self._block_user_service.unblock_user(user, find_user_id)
 
     @debug_log
-    @info_log(['', 'Аккаунт пользователя закрыт'])
+    @info_log(strat_info=None, end_info='Аккаунт закрыт')
     def close_user(self, schema: 'CloseUserSchema') -> None:
         self._close_user_service.close_user(schema.name, schema.email, schema.password)
 
