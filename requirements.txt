@@ -31,3 +31,6 @@ psycopg-binary~=3.3.3
 
 #migration
 alembic~=1.18.4
+
+#di
+dishka~=1.9.1
