@@ -25,6 +25,6 @@ class BalanceTable(Base):
     wallet: Mapped['WalletTable'] = relationship('WalletTable', back_populates='balance')
 
     def __repr__(self) -> str:
-        return f'{self.balance_type} #{self.balance_id} -> wallet_id: #{self.wallet_id}\nIs_frozen: {self.is_frozen}'
+        return f'{self.balance_type.value} #{self.balance_id} -> wallet_id: {self.wallet_id}( is_frozen: {self.is_frozen}, currency: {self.currency}, amount: {self.amount})'
 
     __str__ = __repr__

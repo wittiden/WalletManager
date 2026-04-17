@@ -24,6 +24,6 @@ class TransactionTable(Base):
     to_currency: Mapped[str] = mapped_column(nullable=True)
 
     def __repr__(self) -> str:
-        return f'#{self.transaction_id} -> {self.operation_type}\nStatus: {self.operation_status}, from_address: {self.from_address}, to_address: {self.to_address}, amount: {self.amount}, completed_at: {self.completed_at}\nFee: {self.fee}, from_currency: {self.from_currency} -> to_currency: {self.to_currency}'
+        return f'{self.operation_type.value} #{self.transaction_id} (from_address: {self.from_address}, to_address: {self.to_address}, completed_at: {self.completed_at}, amount: {self.amount}, operation_status: {self.operation_status.value}, fee: {self.fee}, from_currency: {self.from_currency}, to_currency: {self.to_currency})'
 
     __str__ = __repr__

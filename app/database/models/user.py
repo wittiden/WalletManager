@@ -24,6 +24,6 @@ class UserTable(Base):
     wallets: Mapped[list['WalletTable']] = relationship('WalletTable', back_populates='owner', cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
-        return f'{self.status.value} #{self.user_id}\nName: {self.name}, email: {self.email}, is_blocked: {self.is_blocked}'
+        return f'{self.status.value} #{self.user_id} (name: {self.name}, email: {self.email}, password: {self.password}, is_blocked: {self.is_blocked})'
 
     __str__ = __repr__
