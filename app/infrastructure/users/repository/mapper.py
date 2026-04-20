@@ -18,6 +18,9 @@ class UserMapper:
         return UserTable(user_id=user.item_id, name=user.name, email=user.email, password=user.password, is_blocked=user.is_blocked, status=user.status)
 
     def table_to_domain(self, user_table: 'UserTable') -> 'UserBase':
+        if user_table is None:
+            raise ValueError
+
         obj = self._user_factory.create_user(user_table.status, user_table.name, user_table.email, user_table.password, user_table.is_blocked)
         obj.item_id = user_table.user_id
         return obj

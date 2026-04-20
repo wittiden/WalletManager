@@ -1,8 +1,44 @@
 import pytest
+from sqlalchemy import Engine
 
+from app.common.enums.user_enums import UserStatusesEnum
+from app.core.utils import get_hash
+from app.database.base import Base
 from app.di.container import build_container
+from app.infrastructure.users.schemas import CreateUserSchema, CloseUserSchema
 
+
+@pytest.fixture(scope='session', autouse=True)
+def start_test_db(container):
+    engine = container.get(Engine)
+
+    Base.metadata.drop_all(engine)
+    Base.metadata.create_all(engine)
 
 @pytest.fixture(scope="session", autouse=True)
 def container():
     return build_container()
+
+@pytest.fixture
+def sample_create_client_schema():
+    return CreateUserSchema(key=UserStatusesEnum.CLIENT, name='onetestsschema', email='testschema1@gmail.com', password='bw2fy728943tf&nh')
+
+@pytest.fixture
+def sample_create_admin_schema():
+    return CreateUserSchema(key=UserStatusesEnum.ADMIN, name='twotestschema', email='testschema2@gmail.com', password='bw2fy728943tf&nh')
+
+@pytest.fixture
+def sample_block_user_schema():
+    return CreateUserSchema(key=UserStatusesEnum.ADMIN, name='threetestschema', email='block_test_schema@gmail.com', password='bw2fy728943tf&nh')
+
+@pytest.fixture
+def sample_unblock_user_schema():
+    return CreateUserSchema(key=UserStatusesEnum.ADMIN, name='fourtestschema', email='unblock_test_schema@gmail.com', password='bw2fy728943tf&nh')
+
+@pytest.fixture
+def sample_user_for_close_schema():
+    return CreateUserSchema(key=UserStatusesEnum.CLIENT, name='usertestschema', email='user_for_close_test_schema@gmail.com', password='bw2fy728943tf&nh')
+
+@pytest.fixture
+def sample_close_user_schema():
+    return CloseUserSchema(name='usertestschema', email='user_for_close_test_schema@gmail.com', password=get_hash('bw2fy728943tf&nh'))

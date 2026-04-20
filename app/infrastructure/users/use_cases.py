@@ -176,10 +176,7 @@ class CloseUserService:
     def close_user(self, name: str, email: str, password: str) -> None:
         user = self._user_queries_repository.select_user_for_email_and_pass(email, password)
         GeneralValidation.not_none_checker(user)
-        if user.name == name:
-            if user.is_blocked:
-                raise UserIsBlockedError
+        if user.name != name:
+            raise ValueError
 
-            self._user_commands_repository.delete_user_info(user)
-
-        raise ValueError
+        self._user_commands_repository.delete_user_info(user)
