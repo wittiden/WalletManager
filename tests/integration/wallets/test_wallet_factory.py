@@ -12,7 +12,7 @@ class TestWalletFactory:
         WalletTypesEnum.DEBIT,
         WalletTypesEnum.CREDIT,
     ])
-    def test_crete_wallet_factory(self, container, sample_wallet_base, key):
+    def test_create_wallet_factory(self, container, sample_wallet_base, key):
         wallet_factory = container.get(WalletFactory)
 
         wallet = wallet_factory.create_wallet(key, sample_wallet_base.pin, sample_wallet_base.owner_id)
