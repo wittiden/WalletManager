@@ -1,12 +1,13 @@
 import pytest
-from app.infrastructure.users.domain import Client, Admin
+
+from app.infrastructure.users.domain import UserBase
+from app.infrastructure.wallets.domain import WalletBase
 
 
 @pytest.fixture
-def client_sample() -> 'Client':
-    return Client('test_client', 'test_client@gmail.com', 'bhwrlghgq951e;wghlwrog')
-
+def sample_user_base():
+    return UserBase('test', 'test@gmail.com', 'pass123')
 
 @pytest.fixture
-def admin_sample() -> 'Admin':
-    return Admin('test_admin', 'test_admin@gmail.com', 'wbgrlghwglhqowihgeuvw')
+def sample_wallet_base():
+    return WalletBase('1234', 'owner_id')

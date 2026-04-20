@@ -1,9 +1,9 @@
 from dishka import Provider, provide, make_container, Scope
-from sqlalchemy.engine import create_engine, Engine
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncEngine
+from sqlalchemy import Engine, create_engine
+from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncEngine, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
-from app.database.config import settings
+from app.database.config import Settings
 from app.common.enums.balance_enums import BalanceTypesEnum
 from app.common.enums.transaction_enums import TransactionTypesEnum
 from app.common.enums.user_enums import UserStatusesEnum
@@ -94,39 +94,49 @@ class MapperProvider(Provider):
         return TransactionMapper(transaction_factory)
 
 
+class DatabaseSettingsProvider(Provider):
+    """Класс провайдер по созданию настроек бд"""
+
+    scope = Scope.APP
+
+    @provide
+    def database_settings(self) -> 'Settings':
+        return Settings()
+
+
 class DatabaseEngineProvider(Provider):
     """Класс провайдер по созданию движка бд"""
 
     scope = Scope.APP
 
     @provide
-    def database_engine(self) -> Engine:
+    def database_create_engine(self, settings: 'Settings') -> Engine:
         return create_engine(
-            url=settings.database_url_psycopg,
+            settings.database_url_psycopg,
             echo=False,
             pool_size=5,
             max_overflow=10
         )
 
     @provide
-    def database_async_engine(self) -> AsyncEngine:
+    def database_create_async_engine(self, settings: 'Settings') -> AsyncEngine:
         return create_async_engine(
-            url=settings.database_url_asyncpg,
-            echo=True
+            settings.database_url_asyncpg,
+            echo=False
         )
 
 
 class DatabaseSessionProvider(Provider):
-    """Класс провайдер по созданию фабрик сессий бд"""
+    """Класс провайдер по созданию фабрики сессий бд"""
 
     scope = Scope.APP
 
     @provide
-    def database_session_factory(self, engine: Engine) -> sessionmaker:
+    def database_create_session_factory(self, engine: Engine) -> sessionmaker:
         return sessionmaker(engine)
 
     @provide
-    def database_async_session_factory(self, async_engine: AsyncEngine) -> async_sessionmaker:
+    def database_create_async_session_factory(self, async_engine: 'AsyncEngine') -> async_sessionmaker:
         return async_sessionmaker(async_engine)
 
 
@@ -203,4 +213,5 @@ class FacadeProvider(Provider):
         return TransactionServiceFacade(create_transaction_service, show_transaction_service, sort_transaction_service)
 
 
-container = make_container(FactoryProvider(), MapperProvider(), DatabaseEngineProvider(), DatabaseSessionProvider(), RepositoryProvider(), FacadeProvider())
+def build_container():
+    return make_container(FactoryProvider(), MapperProvider(), DatabaseSettingsProvider(), DatabaseEngineProvider(), DatabaseSessionProvider(), RepositoryProvider(), FacadeProvider())

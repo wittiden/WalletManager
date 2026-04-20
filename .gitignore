@@ -13,6 +13,8 @@ env/
 .env
 .env.*
 !.env.example
+.test.env
+.test.env.*
 
 # =========================
 # Python cache

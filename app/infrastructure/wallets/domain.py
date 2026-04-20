@@ -28,6 +28,7 @@ class WalletBase(MixinId):
         DomainInvariant.no_empty('pin', self._pin)
         DomainInvariant.no_empty('owner_id', self._owner_id)
         DomainInvariant.no_empty('address', self._address)
+        DomainInvariant.is_instance('is_blocked', self._is_blocked, bool)
 
     @property
     def pin(self) -> str:
@@ -55,7 +56,7 @@ class WalletBase(MixinId):
 
     @address.setter
     def address(self, value: str) -> None:
-        self._address = value
+        self._address = DomainInvariant.no_empty('address', value)
 
     @owner_id.setter
     def owner_id(self, value: str) -> None:
@@ -65,9 +66,7 @@ class WalletBase(MixinId):
 
     @is_blocked.setter
     def is_blocked(self, value: 'bool') -> None:
-        old_value = self._is_blocked
         self._is_blocked = DomainInvariant.is_instance('is_blocked', value, bool)
-        wallet_upgrade_signal.send(self, field='is_blocked', old=old_value, new=value)
 
     def __repr__(self) -> str:
         return f'{self.account_type.value} #{self.item_id} - owner_id: #{self.owner_id}\nAddress: {self._address}, is_blocked: {self._is_blocked}'

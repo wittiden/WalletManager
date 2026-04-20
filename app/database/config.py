@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     DB_HOST: str
     DB_PORT: int
     DB_NAME: str
+    MODE: str
 
     @property
     def database_url_asyncpg(self) -> str:
@@ -18,7 +19,4 @@ class Settings(BaseSettings):
     def database_url_psycopg(self) -> str:
         return f'postgresql+psycopg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}'
 
-    model_config = SettingsConfigDict(env_file='.env', env_file_encoding='UTF-8')
-
-
-settings = Settings()
+    model_config = SettingsConfigDict(env_file_encoding='UTF-8')

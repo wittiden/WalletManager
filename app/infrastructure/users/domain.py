@@ -26,6 +26,7 @@ class UserBase(MixinId):
         DomainInvariant.no_empty('name', self._name)
         DomainInvariant.no_empty('email', self._email)
         DomainInvariant.no_empty('password', self._password)
+        DomainInvariant.is_instance('is_blocked', self._is_blocked, bool)
 
     @property
     def name(self) -> str:
@@ -65,9 +66,7 @@ class UserBase(MixinId):
 
     @is_blocked.setter
     def is_blocked(self, value: bool) -> None:
-        old_value = self._is_blocked
         self._is_blocked = DomainInvariant.is_instance('is_blocked', value, bool)
-        user_upgrade_signal.send(self, field='is_blocked', old=old_value, new=value)
 
     def __repr__(self) -> str:
         return f'{self._status.value} #{self.item_id}\nName: {self._name}, email: {self._email}, is_blocked: {self._is_blocked}'

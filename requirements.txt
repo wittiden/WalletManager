@@ -16,6 +16,8 @@ aenum~=3.1.17
 
 #tests
 pytest~=9.0.2
+pytest-dotenv~=0.5.2
+pytest-mock~=3.15.1
 pytest-timeout~=2.4.0
 
 #parsing
