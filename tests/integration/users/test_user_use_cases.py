@@ -7,7 +7,7 @@ from app.infrastructure.users.use_cases import UserServiceFacade
 
 
 class TestUserServiceFacade:
-    """Класс для тестирования работы фасада"""
+    """Класс для тестирования работы фасада операций над пользователем"""
 
     @pytest.mark.integration
     @pytest.mark.parametrize('key, name, email, password', [
@@ -53,10 +53,10 @@ class TestUserServiceFacade:
         assert find_user.status == user.status
 
     @pytest.mark.integration
-    def test_block_user_good(self, container, sample_block_user_schema):
+    def test_block_user_good(self, container, sample_create_admin_schema):
         facade = container.get(UserServiceFacade)
 
-        user = facade.create_user(sample_block_user_schema)
+        user = facade.create_user(sample_create_admin_schema)
         facade.block_user(user, user.item_id)
 
         blocked_user = facade.show_user(user, user.item_id)
@@ -68,10 +68,10 @@ class TestUserServiceFacade:
         assert blocked_user.status == user.status
 
     @pytest.mark.integration
-    def test_unblock_user_good(self, container, sample_unblock_user_schema):
+    def test_unblock_user_good(self, container, sample_create_admin_schema):
         facade = container.get(UserServiceFacade)
 
-        user = facade.create_user(sample_unblock_user_schema)
+        user = facade.create_user(sample_create_admin_schema)
         facade.block_user(user, user.item_id)
 
         facade.unblock_user(user, user.item_id)
@@ -85,10 +85,10 @@ class TestUserServiceFacade:
         assert unblocked_user.status == user.status
 
     @pytest.mark.integration
-    def test_close_user_good(self, container, sample_close_user_schema, sample_user_for_close_schema):
+    def test_close_user_good(self, container, sample_close_user_schema, sample_create_admin_schema):
         facade = container.get(UserServiceFacade)
 
-        user = facade.create_user(sample_user_for_close_schema)
+        user = facade.create_user(sample_create_admin_schema)
 
         facade.close_user(sample_close_user_schema)
 

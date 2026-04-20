@@ -26,7 +26,7 @@ class WalletQueriesRepository:
 
             if obj:
                 return self._wallet_mapper.table_to_domain(obj)
-            raise
+            raise ValueError
 
     def select_all_wallets(self) -> list['WalletBase']:
         with self._session_factory() as session:
@@ -54,7 +54,7 @@ class WalletQueriesRepository:
 
             if obj:
                 return self._wallet_mapper.table_to_domain(obj)
-            raise
+            raise ValueError
 
     def select_my_wallets(self, user: 'UserBase') -> list['WalletBase']:
         with self._session_factory() as session:
@@ -67,7 +67,7 @@ class WalletQueriesRepository:
             obj = session.execute(select(WalletTable).where(WalletTable.owner_id == user.item_id, WalletTable.pin == pin, WalletTable.address == address)).scalars().one_or_none()
             if obj:
                 return self._wallet_mapper.table_to_domain(obj)
-            raise
+            raise ValueError
 
     def select_my_balance(self, wallet: 'WalletBase') -> 'BalanceBase':
         with self._session_factory() as session:
