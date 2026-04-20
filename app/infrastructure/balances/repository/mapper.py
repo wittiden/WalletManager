@@ -15,6 +15,9 @@ class BalanceMapper:
         self._balance_factory = balance_factory
 
     def table_to_domain(self, balance_table: 'BalanceTable') -> 'BalanceBase':
+        if balance_table is None:
+            raise ValueError
+
         obj = self._balance_factory.create_balance(balance_table.balance_type, balance_table.wallet_id, balance_table.amount, balance_table.currency)
         obj.is_frozen = balance_table.is_frozen
         obj.item_id = balance_table.balance_id

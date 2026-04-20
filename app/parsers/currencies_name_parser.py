@@ -7,7 +7,7 @@ from app.common.enums.balance_enums import WalletBalanceCurrenciesEnum
 from app.core.exceptions import WebElementNotFoundError
 
 
-def start_currencies_parser() -> list:
+def start_currencies_name_parser() -> list:
     link = 'https://myfin.by/converter'
     user_agent = fake_useragent.FakeUserAgent().random
 
@@ -38,7 +38,7 @@ def start_currencies_parser() -> list:
     raise WebElementNotFoundError
 
 
-def load_currencies_into_enum(currencies_zipper: list) -> None:
+def load_currencies_name_into_enum(currencies_zipper: list) -> None:
 
     for name, value in currencies_zipper:
         extend_enum(WalletBalanceCurrenciesEnum, name, value)

@@ -121,3 +121,55 @@ class FreezeBalanceService:
             raise
 
         self._balance_commands_repository.upgrade_balance_info(obj, {'is_frozen': False})
+
+
+# class WalletOperationsServiceFacade:
+#     """Класс фасад для управления операциями кошельков"""
+#
+#     def __init__(self, deposit_wallet_operation_service: 'DepositWalletOperationService', withdraw_wallet_operation_service: 'WithdrawWalletOperationService', exchange_wallet_operation_service: 'ExchangeWalletOperationService') -> None:
+#         self._deposit_wallet_operation_service = deposit_wallet_operation_service
+#         self._withdraw_wallet_operation_service = withdraw_wallet_operation_service
+#         self._exchange_wallet_operation_service = exchange_wallet_operation_service
+#
+#     def deposit_wallet(self):
+#         pass
+#
+#     def withdraw_wallet(self):
+#         pass
+#
+#     def exchange_currencies_wallet(self):
+#         pass
+#
+#
+# class DepositWalletOperationService:
+#     """Класс сервис для управления операциями по пополнению кошелька"""
+#
+#     @staticmethod
+#     def deposit_wallet(balance: 'RegularBalance', transaction: 'DepositTransaction'):
+#         if balance.is_frozen:
+#             raise ValueError
+#
+#         # if RegularBalance:
+#         #     transaction.operation_status.PENDING
+#         #     try:
+#         #         balance[transaction.deposit_currency] += transaction.amount
+#         #     except ValueError:
+#         #         transaction.operation_status.FAILED
+#         #         raise
+#         #     transaction.operation_status.SUCCESS
+#         # if ForeignBalance:
+#
+#
+# class WithdrawWalletOperationService:
+#     """Класс сервис для управления операциями по снятию денег с кошелька"""
+#
+#     @staticmethod
+#     def withdraw_wallet(balance: 'RegularBalance'):
+#         pass
+#
+# class ExchangeWalletOperationService:
+#     """Класс сервис для управления операциями по обмену валют на кошельке"""
+#
+#     @staticmethod
+#     def exchange_wallet():
+#         pass

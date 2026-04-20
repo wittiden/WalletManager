@@ -20,7 +20,7 @@ from app.infrastructure.transactions.repository.commands import TransactionComma
 from app.infrastructure.transactions.repository.mapper import TransactionMapper
 from app.infrastructure.transactions.repository.queries import TransactionQueriesRepository
 from app.infrastructure.transactions.use_cases import CreateTransactionService, ShowTransactionService, \
-    SortTransactionService, TransactionServiceFacade
+    SortTransactionService, TransactionServiceFacade, UpdateTransactionService
 from app.infrastructure.users.domain import Client, Admin
 from app.infrastructure.users.factory import UserFactory, UserRegistrations
 from app.infrastructure.users.repository.commands import UserCommandsRepository
@@ -210,7 +210,8 @@ class FacadeProvider(Provider):
         create_transaction_service = CreateTransactionService(transaction_factory, transaction_commands_repository)
         show_transaction_service = ShowTransactionService(transaction_queries_repository)
         sort_transaction_service = SortTransactionService(transaction_queries_repository)
-        return TransactionServiceFacade(create_transaction_service, show_transaction_service, sort_transaction_service)
+        update_transaction_service = UpdateTransactionService(transaction_commands_repository)
+        return TransactionServiceFacade(create_transaction_service, show_transaction_service, sort_transaction_service, update_transaction_service)
 
 
 def build_container():

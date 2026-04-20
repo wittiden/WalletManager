@@ -15,6 +15,9 @@ class TransactionMapper:
         self._transaction_factory = transaction_factory
 
     def table_to_domain(self, transaction_table: 'TransactionTable') -> 'TransactionBase':
+        if transaction_table is None:
+            raise ValueError
+
         if transaction_table.operation_type == TransactionTypesEnum.DEPOSIT:
             obj = self._transaction_factory.create_transaction(transaction_table.operation_type, transaction_table.from_address, transaction_table.to_address, transaction_table.completed_at, transaction_table.amount, transaction_table.operation_status)
         elif transaction_table.operation_type == TransactionTypesEnum.WITHDRAW:

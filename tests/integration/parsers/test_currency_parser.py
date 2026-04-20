@@ -1,7 +1,7 @@
 import pytest
 
 from app.common.enums.balance_enums import WalletBalanceCurrenciesEnum
-from app.parsers.currencies_parser import start_currencies_parser, load_currencies_into_enum
+from app.parsers.currencies_name_parser import start_currencies_name_parser, load_currencies_name_into_enum
 
 
 class TestCurrencyParser:
@@ -11,7 +11,7 @@ class TestCurrencyParser:
     @pytest.mark.slow
     @pytest.mark.timeout(10)
     def test_start_currency_parser(self):
-        result = start_currencies_parser()
+        result = start_currencies_name_parser()
 
         assert isinstance(result, list)
         assert len(result) > 20
@@ -20,7 +20,7 @@ class TestCurrencyParser:
     @pytest.mark.slow
     @pytest.mark.timeout(10)
     def test_load_currencies_into_enum(self):
-        currencies_zip = start_currencies_parser()
-        load_currencies_into_enum(currencies_zip)
+        currencies_zip = start_currencies_name_parser()
+        load_currencies_name_into_enum(currencies_zip)
 
         assert len(WalletBalanceCurrenciesEnum) > len(currencies_zip)

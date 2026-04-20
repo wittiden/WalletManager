@@ -17,7 +17,7 @@ class TransactionTable(Base):
     to_address: Mapped[str] = mapped_column(String(26), nullable=False)
     completed_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     amount: Mapped[Decimal] = mapped_column(Numeric(10,2), nullable=False)
-    operation_status: Mapped['TransactionStatusesEnum'] = mapped_column(Enum(TransactionStatusesEnum, name='transaction_status_enum'), default=TransactionStatusesEnum.UNKNOWN, nullable=False)
+    operation_status: Mapped['TransactionStatusesEnum'] = mapped_column(Enum(TransactionStatusesEnum, name='transaction_status_enum'), nullable=True)
     operation_type: Mapped['TransactionTypesEnum'] = mapped_column(Enum(TransactionTypesEnum, name='transaction_type_enum'), default=TransactionTypesEnum.UNKNOWN, nullable=False)
     fee: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=True)
     from_currency: Mapped[str] = mapped_column(nullable=True)

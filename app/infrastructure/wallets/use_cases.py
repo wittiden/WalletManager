@@ -174,33 +174,3 @@ class CloseWalletService:
 
         obj = GeneralValidation.not_none_checker(self._wallet_queries_repository.select_for_close_wallet(user, get_hash(pin), address))
         self._wallet_commands_repository.delete_wallet_info(GeneralValidation.not_none_checker(obj))
-
-
-class WalletOperationsServiceFacade:
-    """Класс фасад для управления операциями кошельков"""
-
-    def __init__(self, deposit_wallet_operation_service: 'DepositWalletOperationService', withdraw_wallet_operation_service: 'WithdrawWalletOperationService', exchange_wallet_operation_service: 'ExchangeWalletOperationService') -> None:
-        self._deposit_wallet_operation_service = deposit_wallet_operation_service
-        self._withdraw_wallet_operation_service = withdraw_wallet_operation_service
-        self._exchange_wallet_operation_service = exchange_wallet_operation_service
-
-    def deposit_wallet(self):
-        pass
-
-    def withdraw_wallet(self):
-        pass
-
-    def exchange_currencies_wallet(self):
-        pass
-
-
-class DepositWalletOperationService:
-    """Класс сервис для управления операциями по пополнению кошелька"""
-
-
-class WithdrawWalletOperationService:
-    """Класс сервис для управления операциями по снятию денег с кошелька"""
-
-
-class ExchangeWalletOperationService:
-    """Класс сервис для управления операциями по обмену валют на кошельке"""

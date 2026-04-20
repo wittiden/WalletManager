@@ -2,7 +2,6 @@ import datetime
 from decimal import Decimal
 import pytest
 
-from app.common.enums.transaction_enums import TransactionStatusesEnum
 from app.infrastructure.balances.domain import BalanceBase, RegularBalance, ForeignBalance
 from app.infrastructure.transactions.domain import DepositTransaction, WithdrawTransaction, ExchangeTransaction
 from app.infrastructure.users.domain import UserBase
@@ -31,12 +30,12 @@ def sample_balance_foreign():
 
 @pytest.fixture
 def sample_transaction_deposit():
-    return DepositTransaction('12345', '54321', datetime.datetime.now(), Decimal(1), TransactionStatusesEnum.SUCCESS)
+    return DepositTransaction('12345', '54321', datetime.datetime.now(), Decimal(1), Decimal(0), 'USD')
 
 @pytest.fixture
 def sample_transaction_withdraw():
-    return WithdrawTransaction('12345', '54321', datetime.datetime.now(), Decimal(1), TransactionStatusesEnum.SUCCESS, Decimal(0.03))
+    return WithdrawTransaction('12345', '54321', datetime.datetime.now(), Decimal(1), Decimal(0.03), 'BYN')
 
 @pytest.fixture
 def sample_transaction_exchange():
-    return ExchangeTransaction('12345', '54321', datetime.datetime.now(), Decimal(1), TransactionStatusesEnum.SUCCESS, Decimal(0.03), 'USD', 'BYN')
+    return ExchangeTransaction('12345', '54321', datetime.datetime.now(), Decimal(1), Decimal(0.03), 'USD', 'BYN')

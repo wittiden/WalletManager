@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 from sqlalchemy.exc import IntegrityError
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from app.common.enums.transaction_enums import TransactionStatusesEnum
 from app.common.enums.transaction_enums import TransactionTypesEnum
@@ -13,31 +13,33 @@ if TYPE_CHECKING:
     from app.infrastructure.transactions.repository.queries import TransactionQueriesRepository
     from app.infrastructure.transactions.domain import TransactionBase
     from app.infrastructure.transactions.factory import TransactionFactory
-    from app.infrastructure.transactions.schemas import CreateDepositTransactionSchema, CreateExchangeTransactionSchema, \
-        CreateWithdrawTransactionSchema
-
+    from app.infrastructure.transactions.schemas import CreateDepositOrWithdrawTransactionSchema, CreateExchangeTransactionSchema
 
 class TransactionServiceFacade:
     """Фасад класс для создания общего интерфейса работы с сервисами транзакций"""
 
-    def __init__(self, transaction_create_service: 'CreateTransactionService', transaction_show_service: 'ShowTransactionService', transaction_sort_service: 'SortTransactionService') -> None:
+    def __init__(self, transaction_create_service: 'CreateTransactionService', transaction_show_service: 'ShowTransactionService', sort_transaction_service: 'SortTransactionService', update_transaction_service: 'UpdateTransactionService') -> None:
         self._transaction_create_service = transaction_create_service
         self._transaction_show_service = transaction_show_service
-        self._transaction_sort_service = transaction_sort_service
+        self._sort_transaction_service = sort_transaction_service
+        self._update_transaction_service = update_transaction_service
 
     @debug_log
     @info_log(strat_info=None, end_info='Транзакция создана')
-    def create_transaction(self, schema: 'CreateDepositTransactionSchema | CreateWithdrawTransactionSchema | CreateExchangeTransactionSchema'):
-        if schema.operation_type == TransactionTypesEnum.DEPOSIT:
-            obj = self._transaction_create_service.create_deposit_transaction(schema.operation_type, schema.from_address, schema.to_address, schema.amount, schema.operation_status)
-        elif schema.operation_type == TransactionTypesEnum.WITHDRAW:
-            obj = self._transaction_create_service.create_withdraw_transaction(schema.operation_type, schema.from_address, schema.to_address, schema.amount, schema.operation_status, schema.withdraw_fee)
+    def create_transaction(self, schema: 'CreateDepositOrWithdrawTransactionSchema | CreateExchangeTransactionSchema'):
+        if schema.operation_type == TransactionTypesEnum.DEPOSIT or schema.operation_type == TransactionTypesEnum.WITHDRAW:
+            obj = self._transaction_create_service.create_deposit_transaction(schema.operation_type, schema.from_address, schema.to_address, schema.amount, schema.fee, schema.operation_status, schema.currency)
         elif schema.operation_type == TransactionTypesEnum.EXCHANGE:
             obj = self._transaction_create_service.create_exchange_transaction(schema.operation_type, schema.from_address, schema.to_address, schema.amount, schema.operation_status, schema.exchange_fee, schema.from_currency, schema.to_currency)
         else:
             raise ValueError(f"Unknown type: {schema.operation_type}")
 
         return obj
+
+    @debug_log
+    @info_log(strat_info=None, end_info='Статус транзакции обновлен')
+    def update_transaction_status(self, transaction: 'TransactionBase', new_transaction_param: Any) -> None:
+        self._update_transaction_service.update_transaction_status(transaction, new_transaction_param)
 
     @debug_log
     @info_log(strat_info='Информация о транзакции:', end_info=None)
@@ -52,7 +54,7 @@ class TransactionServiceFacade:
     @debug_log
     @info_log(strat_info='Отсортированная информация о транзакциях:', end_info=None)
     def sort_all_transactions(self, order_by_param: str) -> list['TransactionBase']:
-        return self._transaction_sort_service.sort_all_transactions(order_by_param)
+        return self._sort_transaction_service.sort_all_transactions(order_by_param)
 
 
 class CreateTransactionService:
@@ -62,24 +64,9 @@ class CreateTransactionService:
         self._transaction_factory = transaction_factory
         self._transaction_commands_repository = transaction_commands_repository
 
-    def create_deposit_transaction(self, key: 'TransactionTypesEnum', from_address: str, to_address: str,  amount: Decimal, operation_status: 'TransactionStatusesEnum') -> 'TransactionBase':
+    def create_deposit_transaction(self, key: 'TransactionTypesEnum', from_address: str, to_address: str,  amount: Decimal, fee: Decimal, operation_status: 'TransactionStatusesEnum', currency: str) -> 'TransactionBase':
         completed_at = datetime.now()
-        transaction = self._transaction_factory.create_transaction(key, from_address, to_address, completed_at, amount, operation_status)
-        GeneralValidation.not_none_checker(transaction)
-
-        try:
-            self._transaction_commands_repository.insert_transaction_info(transaction)
-        except IntegrityError:
-            raise
-
-        return transaction
-
-    def create_withdraw_transaction(self, key: 'TransactionTypesEnum', from_address: str, to_address: str,  amount: Decimal, operation_status: 'TransactionStatusesEnum', withdraw_fee: Decimal):
-        if from_address != to_address:
-            raise ValueError
-
-        completed_at = datetime.now()
-        transaction = self._transaction_factory.create_transaction(key, from_address, to_address, completed_at, amount, operation_status, withdraw_fee)
+        transaction = self._transaction_factory.create_transaction(key, from_address, to_address, completed_at, amount, fee, operation_status, currency)
         GeneralValidation.not_none_checker(transaction)
 
         try:
@@ -126,3 +113,13 @@ class SortTransactionService:
 
     def sort_all_transactions(self, order_by_param: str) -> list['TransactionBase']:
         return self._transaction_queries_repository.sort_all_transactions(order_by_param)
+
+
+class UpdateTransactionService:
+    """Сервис класс для обновления информации о транзакциях"""
+
+    def __init__(self, transaction_commands_repository: 'TransactionCommandsRepository') -> None:
+        self._transaction_commands_repository = transaction_commands_repository
+
+    def update_transaction_status(self, transaction: 'TransactionBase', new_transaction_param: dict[str, Any]) -> None:
+        self._transaction_commands_repository.update_transaction_info(transaction, new_transaction_param)
