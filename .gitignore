@@ -10,11 +10,20 @@ env/
 # =========================
 # Environment variables
 # =========================
+# production env
 .env
 .env.*
+
+# allow example files
 !.env.example
+
+# test env files
 .test.env
 .test.env.*
+
+# explicitly allow test example
+!.test.env.example
+
 
 # =========================
 # Python cache
