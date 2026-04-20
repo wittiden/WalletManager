@@ -12,6 +12,13 @@ class DomainInvariant:
         return value
 
     @staticmethod
+    def no_empty_collection(attrib_name: str, value: list | dict) -> list | dict:
+        if not value:
+            raise ValueError(f'{attrib_name} collection is empty')
+
+        return value
+
+    @staticmethod
     def no_none(attrib_name: str, value: Any) -> Any:
         if value is None:
             raise ValueError(f'{attrib_name} is empty')
@@ -24,3 +31,11 @@ class DomainInvariant:
             raise ValueError(f'{attrib_name} must be {correct_type}')
 
         return value
+
+    @staticmethod
+    def no_negative(attrib_name: str, value: Any):
+        if value < 0:
+            raise ValueError(f'{attrib_name} < 0')
+
+        return value
+

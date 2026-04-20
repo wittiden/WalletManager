@@ -7,8 +7,8 @@ from app.common.mixins import MixinId
 from app.core.invariants import DomainInvariant
 from app.core.utils import blink_func
 
-upgrade_signal = Signal()
-upgrade_signal.connect(blink_func)
+upgrade_balance_signal = Signal()
+upgrade_balance_signal.connect(blink_func)
 
 
 @dataclass
@@ -24,6 +24,7 @@ class BalanceBase(MixinId):
         super().__init__()
 
         DomainInvariant.no_empty('wallet_id', self._wallet_id)
+        DomainInvariant.is_instance('is_frozen', self._is_frozen, bool)
 
     @property
     def wallet_id(self) -> str:
@@ -43,21 +44,17 @@ class BalanceBase(MixinId):
 
     @is_frozen.setter
     def is_frozen(self, value: bool) -> None:
-        old_value = self._is_frozen
-        self._is_frozen = value
-        upgrade_signal.send(self, field='is_frozen', old=old_value, new=value)
+        self._is_frozen = DomainInvariant.is_instance('is_frozen', value, bool)
 
     @balance.setter
     def balance(self, value: dict[str, Decimal]) -> None:
-        old_value = self._balance
         self._balance = value
-        upgrade_signal.send(self, field='balance', old=old_value, new=value)
 
     @wallet_id.setter
     def wallet_id(self, value: str) -> None:
         old_value = self._wallet_id
-        self._wallet_id = value
-        upgrade_signal.send(self, field='wallet_id', old=old_value, new=value)
+        self._wallet_id = DomainInvariant.no_empty('wallet_id', value)
+        upgrade_balance_signal.send(self, field='wallet_id', old=old_value, new=value)
 
     def __repr__(self) -> str:
         return f'{self._balance_type.value} #{self.item_id} -> wallet_id: #{self._wallet_id}\nIs_frozen: {self._is_frozen}'
@@ -76,6 +73,7 @@ class RegularBalance(BalanceBase):
         super().__post_init__()
 
         self._balance_type = BalanceTypesEnum.REGULAR
+        DomainInvariant.no_negative('amount', self._amount)
         DomainInvariant.no_empty('currency', self._currency)
 
         self._balance: dict[str, Decimal] = {self._currency: self._amount}
@@ -90,15 +88,11 @@ class RegularBalance(BalanceBase):
 
     @amount.setter
     def amount(self, value: Decimal) -> None:
-        old_value = self._amount
-        self._amount = value
-        upgrade_signal.send(self, field='amount', old=old_value, new=value)
+        self._amount = DomainInvariant.no_negative('amount', value)
 
     @currency.setter
     def currency(self, value: str) -> None:
-        old_value = self._currency
-        self._currency = value
-        upgrade_signal.send(self, field='currency', old=old_value, new=value)
+        self._currency = DomainInvariant.no_empty('currency', value)
 
     def __repr__(self) -> str:
         return f'{super().__repr__()}\n{self._balance}'
@@ -118,8 +112,8 @@ class ForeignBalance(BalanceBase):
 
         self._balance_type = BalanceTypesEnum.FOREIGN
 
-        DomainInvariant.no_none('amounts', self._amounts)
-        DomainInvariant.no_none('currencies', self._currencies)
+        DomainInvariant.no_empty_collection('amounts', self._amounts)
+        DomainInvariant.no_empty_collection('currencies', self._currencies)
 
         self._balance: dict[str, Decimal] = {currency: amount for amount, currency in zip(self._amounts, self._currencies)}
 
@@ -133,15 +127,12 @@ class ForeignBalance(BalanceBase):
 
     @amounts.setter
     def amounts(self, value: list[Decimal]) -> None:
-        old_value = self._amounts
-        self._amounts = value
-        upgrade_signal.send(self, field='amounts', old=old_value, new=value)
+        self._amounts = DomainInvariant.no_empty_collection('amounts', value)
 
     @currencies.setter
     def currencies(self, value: list[str]) -> None:
-        old_value = self._currencies
-        self._currencies = value
-        upgrade_signal.send(self, field='currencies', old=old_value, new=value)
+        self._currencies = DomainInvariant.no_empty_collection('currencies', value)
+
 
     def __repr__(self) -> str:
         return f'{super().__repr__()}\n{self._balance}'

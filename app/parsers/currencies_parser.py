@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import fake_useragent
 from aenum import extend_enum
 
-from app.common.enums.wallet_enums import WalletBalanceCurrenciesEnum
+from app.common.enums.balance_enums import WalletBalanceCurrenciesEnum
 from app.core.exceptions import WebElementNotFoundError
 
 
