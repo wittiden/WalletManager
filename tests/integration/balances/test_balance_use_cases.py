@@ -158,23 +158,33 @@ class TestBalanceServiceFacade:
         assert find_balances.is_frozen is False
 
 
-# class TestBalanceOperationsServiceFacade:
-#     """Класс для тестирования работы фасада операций пополнения и снятия над балансом"""
-#
-#     @pytest.mark.integration
-#     def test_deposit_balance_good(self, container, load_client_and_wallet_to_db, sample_regular_balance):
-#         balance_facade = container.get(BalanceServiceFacade)
-#         operations_facade = container.get(BalanceOperationsServiceFacade)
-#         transaction_facade = container.get(TransactionServiceFacade)
-#
-#         wallet = load_client_and_wallet_to_db
-#
-#         balance = balance_facade.create_balance(wallet, sample_regular_balance)
-#
-#         transaction_schema = CreateDepositOrWithdrawTransactionSchema(currency=balance.currency, from_address=wallet.address, to_address=wallet.address, amount=Decimal(100), fee=Decimal(1.02), operation_type=TransactionTypesEnum.DEPOSIT)
-#         transaction = transaction_facade.create_transaction(transaction_schema)
-#         operations_facade.deposit_balance(balance, transaction)
-#
-#     @pytest.mark.integration
-#     def test_withdraw_balance_good(self):
-#         pass
+class TestBalanceOperationsServiceFacade:
+    """Класс для тестирования работы фасада операций пополнения и снятия над балансом"""
+
+    @pytest.mark.integration
+    def test_deposit_balance_good(self, container, load_client_and_wallet_to_db, sample_regular_balance):
+        balance_facade = container.get(BalanceServiceFacade)
+        operations_facade = container.get(BalanceOperationsServiceFacade)
+        transaction_facade = container.get(TransactionServiceFacade)
+
+        wallet = load_client_and_wallet_to_db
+
+        balance = balance_facade.create_balance(wallet, sample_regular_balance)
+
+        transaction_schema = CreateDepositOrWithdrawTransactionSchema(currency=balance.currency, from_address=wallet.address, to_address=wallet.address, amount=Decimal(100), fee=Decimal(1.02), operation_type=TransactionTypesEnum.DEPOSIT)
+        transaction = transaction_facade.create_transaction(transaction_schema)
+        operations_facade.deposit_balance(balance, transaction)
+
+    @pytest.mark.integration
+    def test_withdraw_balance_good(self, container, load_client_and_wallet_to_db, sample_regular_balance):
+        balance_facade = container.get(BalanceServiceFacade)
+        operations_facade = container.get(BalanceOperationsServiceFacade)
+        transaction_facade = container.get(TransactionServiceFacade)
+
+        wallet = load_client_and_wallet_to_db
+
+        balance = balance_facade.create_balance(wallet, sample_regular_balance)
+
+        transaction_schema = CreateDepositOrWithdrawTransactionSchema(currency=balance.currency,from_address=wallet.address, to_address=wallet.address, amount=Decimal(10), fee=Decimal(1.02), operation_type=TransactionTypesEnum.WITHDRAW)
+        transaction = transaction_facade.create_transaction(transaction_schema)
+        operations_facade.withdraw_balance(balance, transaction)

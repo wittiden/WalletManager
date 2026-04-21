@@ -177,60 +177,63 @@ class BalanceOperationsServiceFacade:
         self._deposit_balance_operation_service = deposit_balance_operation_service
         self._withdraw_balance_operation_service = withdraw_balance_operation_service
 
-    # @debug_log
-    # @info_log(strat_info=None, end_info='Операция прошла успешно')
-    # def deposit_balance(self, balance: 'BalanceBase', transaction: 'TransactionBase') -> None:
-    #     self._deposit_balance_operation_service.deposit_balance(balance, transaction)
-    #
-    # @debug_log
-    # @info_log(strat_info=None, end_info='Операция прошла успешно')
-    # def withdraw_balance(self, balance: 'BalanceBase', transaction: 'TransactionBase') -> None:
-    #     self._withdraw_balance_operation_service.withdraw_balance(balance, transaction)
+    @debug_log
+    @info_log(strat_info=None, end_info='Операция прошла успешно')
+    def deposit_balance(self, balance: 'BalanceBase', transaction: 'TransactionBase') -> None:
+        self._deposit_balance_operation_service.deposit_balance(balance, transaction)
+
+    @debug_log
+    @info_log(strat_info=None, end_info='Операция прошла успешно')
+    def withdraw_balance(self, balance: 'BalanceBase', transaction: 'TransactionBase') -> None:
+        self._withdraw_balance_operation_service.withdraw_balance(balance, transaction)
 
 
 class DepositBalanceOperationService:
     """Класс сервис для управления операциями по пополнению баланса"""
 
-    def __init__(self, transaction_commands_repository: 'TransactionCommandsRepository') -> None:
+    def __init__(self, transaction_commands_repository: 'TransactionCommandsRepository', balance_commands_repository: 'BalanceCommandsRepository') -> None:
         self._transaction_commands_repository = transaction_commands_repository
+        self._balance_commands_repository = balance_commands_repository
 
-    # def deposit_balance(self, balance: 'BalanceBase', transaction: 'TransactionBase') -> None:
-    #     if balance.is_frozen:
-    #         raise ValueError
-    #
-    #     self._transaction_commands_repository.update_transaction_info(transaction, {'operation_status': TransactionStatusesEnum.PENDING})
-    #     if transaction.currency != balance.currency:
-    #         raise ValueError("Currency mismatch")
-    #
-    #     try:
-    #         balance.amount += transaction.amount * transaction.fee
-    #     except ValueError:
-    #         self._transaction_commands_repository.update_transaction_info(transaction, {'operation_status': TransactionStatusesEnum.FAILED})
-    #         transaction.completed_at = datetime.datetime.now()
-    #         raise ValueError
-    #
-    #     self._transaction_commands_repository.update_transaction_info(transaction, {'operation_status': TransactionStatusesEnum.SUCCESS})
-    #     transaction.completed_at = datetime.datetime.now()
+    def deposit_balance(self, balance: 'BalanceBase', transaction: 'TransactionBase') -> None:
+        if balance.is_frozen:
+            raise ValueError
 
+        self._transaction_commands_repository.update_transaction_info(transaction, {'operation_status': TransactionStatusesEnum.PENDING})
+        if transaction.currency != balance.currency:
+            raise ValueError("Currency mismatch")
+
+        if balance.balance_type == BalanceTypesEnum.REGULAR:
+            try:
+                balance.amount += transaction.amount * transaction.fee
+            except ValueError:
+                self._transaction_commands_repository.update_transaction_info(transaction, {'operation_status': TransactionStatusesEnum.FAILED, 'completed_at': datetime.datetime.now()})
+                raise ValueError
+
+            self._transaction_commands_repository.update_transaction_info(transaction, {'operation_status': TransactionStatusesEnum.SUCCESS, 'completed_at': datetime.datetime.now()})
+            self._balance_commands_repository.upgrade_balance_info(balance, {'amount': balance.amount})
 
 class WithdrawBalanceOperationService:
     """Класс сервис для управления операциями по снятию денег с баланса"""
 
-    def __init__(self, transaction_commands_repository: 'TransactionCommandsRepository') -> None:
+    def __init__(self, transaction_commands_repository: 'TransactionCommandsRepository', balance_commands_repository: 'BalanceCommandsRepository') -> None:
         self._transaction_commands_repository = transaction_commands_repository
+        self._balance_commands_repository = balance_commands_repository
 
-    # def withdraw_balance(self, balance: 'BalanceBase', transaction: 'TransactionBase') -> None:
-    #     if balance.is_frozen:
-    #         raise ValueError
-    #
-    #     self._transaction_commands_repository.update_transaction_info(transaction, {'operation_status': TransactionStatusesEnum.PENDING})
-    #     try:
-    #         balance[transaction.currency] -= transaction.amount * transaction.fee
-    #     except ValueError:
-    #         self._transaction_commands_repository.update_transaction_info(transaction, {'operation_status': TransactionStatusesEnum.FAILED})
-    #         transaction.completed_at = datetime.datetime.now()
-    #
-    #         raise ValueError
-    #
-    #     self._transaction_commands_repository.update_transaction_info(transaction, {'operation_status': TransactionStatusesEnum.SUCCESS})
-    #     transaction.completed_at = datetime.datetime.now()
+    def withdraw_balance(self, balance: 'BalanceBase', transaction: 'TransactionBase') -> None:
+        if balance.is_frozen:
+            raise ValueError
+
+        self._transaction_commands_repository.update_transaction_info(transaction, {'operation_status': TransactionStatusesEnum.PENDING})
+        if transaction.currency != balance.currency:
+            raise ValueError("Currency mismatch")
+
+        if balance.balance_type == BalanceTypesEnum.REGULAR:
+            try:
+                balance.amount -= transaction.amount * transaction.fee
+            except ValueError:
+                self._transaction_commands_repository.update_transaction_info(transaction, {'operation_status': TransactionStatusesEnum.FAILED, 'completed_at': datetime.datetime.now()})
+                raise ValueError
+
+            self._transaction_commands_repository.update_transaction_info(transaction, {'operation_status': TransactionStatusesEnum.SUCCESS, 'completed_at': datetime.datetime.now()})
+            self._balance_commands_repository.upgrade_balance_info(balance, {'amount': balance.amount})
