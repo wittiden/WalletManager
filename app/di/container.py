@@ -208,7 +208,7 @@ class FacadeProvider(Provider):
         return BalanceServiceFacade(create_balance_service, show_balance_service, freeze_balance_service)
 
     @provide
-    def balance_operation_service_facade(self, transaction_commands_repository: 'TransactionCommandsRepository'):
+    def balance_operation_service_facade(self, transaction_commands_repository: 'TransactionCommandsRepository') -> 'BalanceOperationsServiceFacade':
         deposit_balance_operation_service = DepositBalanceOperationService(transaction_commands_repository)
         withdraw_balance_operation_service = WithdrawBalanceOperationService(transaction_commands_repository)
         return BalanceOperationsServiceFacade(deposit_balance_operation_service, withdraw_balance_operation_service)
