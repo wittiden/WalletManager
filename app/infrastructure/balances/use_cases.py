@@ -1,8 +1,10 @@
+import datetime
 from decimal import Decimal
 from sqlalchemy.exc import IntegrityError
 from typing import TYPE_CHECKING
 
 from app.common.enums.balance_enums import BalanceTypesEnum
+from app.common.enums.transaction_enums import TransactionStatusesEnum
 from app.core.decorators import debug_log, info_log
 from app.core.validations import UseCasesValidation, GeneralValidation
 
@@ -15,6 +17,8 @@ if TYPE_CHECKING:
     from app.infrastructure.users.domain import UserBase
     from app.infrastructure.wallets.domain import WalletBase
     from app.infrastructure.wallets.repository.queries import WalletQueriesRepository
+    from app.infrastructure.transactions.domain import TransactionBase
+    from app.infrastructure.transactions.repository.commands import TransactionCommandsRepository
 
 
 class BalanceServiceFacade:
@@ -123,53 +127,64 @@ class FreezeBalanceService:
         self._balance_commands_repository.upgrade_balance_info(obj, {'is_frozen': False})
 
 
-# class WalletOperationsServiceFacade:
-#     """Класс фасад для управления операциями кошельков"""
-#
-#     def __init__(self, deposit_wallet_operation_service: 'DepositWalletOperationService', withdraw_wallet_operation_service: 'WithdrawWalletOperationService', exchange_wallet_operation_service: 'ExchangeWalletOperationService') -> None:
-#         self._deposit_wallet_operation_service = deposit_wallet_operation_service
-#         self._withdraw_wallet_operation_service = withdraw_wallet_operation_service
-#         self._exchange_wallet_operation_service = exchange_wallet_operation_service
-#
-#     def deposit_wallet(self):
-#         pass
-#
-#     def withdraw_wallet(self):
-#         pass
-#
-#     def exchange_currencies_wallet(self):
-#         pass
-#
-#
-# class DepositWalletOperationService:
-#     """Класс сервис для управления операциями по пополнению кошелька"""
-#
-#     @staticmethod
-#     def deposit_wallet(balance: 'RegularBalance', transaction: 'DepositTransaction'):
-#         if balance.is_frozen:
-#             raise ValueError
-#
-#         # if RegularBalance:
-#         #     transaction.operation_status.PENDING
-#         #     try:
-#         #         balance[transaction.deposit_currency] += transaction.amount
-#         #     except ValueError:
-#         #         transaction.operation_status.FAILED
-#         #         raise
-#         #     transaction.operation_status.SUCCESS
-#         # if ForeignBalance:
-#
-#
-# class WithdrawWalletOperationService:
-#     """Класс сервис для управления операциями по снятию денег с кошелька"""
-#
-#     @staticmethod
-#     def withdraw_wallet(balance: 'RegularBalance'):
-#         pass
-#
-# class ExchangeWalletOperationService:
-#     """Класс сервис для управления операциями по обмену валют на кошельке"""
-#
-#     @staticmethod
-#     def exchange_wallet():
-#         pass
+class BalanceOperationsServiceFacade:
+    """Класс фасад для управления операциями баланса"""
+
+    def __init__(self, deposit_balance_operation_service: 'DepositBalanceOperationService', withdraw_balance_operation_service: 'WithdrawBalanceOperationService') -> None:
+        self._deposit_balance_operation_service = deposit_balance_operation_service
+        self._withdraw_balance_operation_service = withdraw_balance_operation_service
+
+    @debug_log
+    @info_log(strat_info=None, end_info='Операция прошла успешно')
+    def deposit_balance(self, balance: 'BalanceBase', transaction: 'TransactionBase') -> None:
+        self._deposit_balance_operation_service.deposit_balance(balance, transaction)
+
+    @debug_log
+    @info_log(strat_info=None, end_info='Операция прошла успешно')
+    def withdraw_balance(self, balance: 'BalanceBase', transaction: 'TransactionBase') -> None:
+        self._withdraw_balance_operation_service.withdraw_balance(balance, transaction)
+
+
+class DepositBalanceOperationService:
+    """Класс сервис для управления операциями по пополнению баланса"""
+
+    def __init__(self, transaction_commands_repository: 'TransactionCommandsRepository') -> None:
+        self._transaction_commands_repository = transaction_commands_repository
+
+    def deposit_balance(self, balance: 'BalanceBase', transaction: 'TransactionBase') -> None:
+        if balance.is_frozen:
+            raise ValueError
+
+        self._transaction_commands_repository.update_transaction_info(transaction, {'operation_status': TransactionStatusesEnum.PENDING})
+        try:
+            balance[transaction.deposit_currency] += transaction.amount * transaction.fee
+        except ValueError:
+            self._transaction_commands_repository.update_transaction_info(transaction, {'operation_status': TransactionStatusesEnum.FAILED})
+            transaction.completed_at = datetime.datetime.now()
+            raise ValueError
+
+        self._transaction_commands_repository.update_transaction_info(transaction, {'operation_status': TransactionStatusesEnum.SUCCESS})
+        transaction.completed_at = datetime.datetime.now()
+
+
+class WithdrawBalanceOperationService:
+    """Класс сервис для управления операциями по снятию денег с баланса"""
+
+    def __init__(self, transaction_commands_repository: 'TransactionCommandsRepository') -> None:
+        self._transaction_commands_repository = transaction_commands_repository
+
+    def withdraw_balance(self, balance: 'BalanceBase', transaction: 'TransactionBase') -> None:
+        if balance.is_frozen:
+            raise ValueError
+
+        self._transaction_commands_repository.update_transaction_info(transaction, {'operation_status': TransactionStatusesEnum.PENDING})
+        try:
+            balance[transaction.withdraw_currency] -= transaction.amount * transaction.fee
+        except ValueError:
+            self._transaction_commands_repository.update_transaction_info(transaction, {'operation_status': TransactionStatusesEnum.FAILED})
+            transaction.completed_at = datetime.datetime.now()
+
+            raise ValueError
+
+        self._transaction_commands_repository.update_transaction_info(transaction, {'operation_status': TransactionStatusesEnum.SUCCESS})
+        transaction.completed_at = datetime.datetime.now()

@@ -13,7 +13,9 @@ from app.infrastructure.balances.factory import BalanceFactory, BalanceRegistry
 from app.infrastructure.balances.repository.commands import BalanceCommandsRepository
 from app.infrastructure.balances.repository.mapper import BalanceMapper
 from app.infrastructure.balances.use_cases import CreateBalanceService, ShowBalanceService, FreezeBalanceService, \
-    BalanceServiceFacade
+    BalanceServiceFacade, BalanceOperationsServiceFacade, WithdrawBalanceOperationService, \
+    DepositBalanceOperationService
+
 from app.infrastructure.transactions.domain import DepositTransaction, WithdrawTransaction, ExchangeTransaction
 from app.infrastructure.transactions.factory import TransactionFactory, TransactionRegistry
 from app.infrastructure.transactions.repository.commands import TransactionCommandsRepository
@@ -204,6 +206,12 @@ class FacadeProvider(Provider):
         show_balance_service = ShowBalanceService(wallet_queries_repository)
         freeze_balance_service = FreezeBalanceService(wallet_queries_repository, balance_commands_repository)
         return BalanceServiceFacade(create_balance_service, show_balance_service, freeze_balance_service)
+
+    @provide
+    def balance_operation_service_facade(self, transaction_commands_repository: 'TransactionCommandsRepository'):
+        deposit_balance_operation_service = DepositBalanceOperationService(transaction_commands_repository)
+        withdraw_balance_operation_service = WithdrawBalanceOperationService(transaction_commands_repository)
+        return BalanceOperationsServiceFacade(deposit_balance_operation_service, withdraw_balance_operation_service)
 
     @provide
     def transaction_service_facade(self, transaction_factory: 'TransactionFactory', transaction_commands_repository: 'TransactionCommandsRepository', transaction_queries_repository: 'TransactionQueriesRepository') -> 'TransactionServiceFacade':
