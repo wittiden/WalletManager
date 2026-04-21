@@ -9,7 +9,7 @@ from app.infrastructure.transactions.use_cases import TransactionServiceFacade
 
 
 class TestTransactionServiceFacade:
-    """"""
+    """Класс для тестирования работы фасада операций над транзакциями"""
 
     @pytest.mark.integration
     @pytest.mark.parametrize('currency, from_address, to_address, amount, fee, operation_type', [

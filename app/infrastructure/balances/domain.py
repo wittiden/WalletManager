@@ -57,7 +57,7 @@ class BalanceBase(MixinId):
         upgrade_balance_signal.send(self, field='wallet_id', old=old_value, new=value)
 
     def __repr__(self) -> str:
-        return f'{self._balance_type.value} #{self.item_id} -> wallet_id: #{self._wallet_id}\nIs_frozen: {self._is_frozen}'
+        return f'{self._balance_type.value} #{self.item_id} -> wallet_id: #{self._wallet_id}, is_frozen: {self._is_frozen}'
 
     __str__ = __repr__
 

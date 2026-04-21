@@ -16,6 +16,6 @@ class CreateForeignBalanceSchema(BaseModel):
     """Класс схема для проверки полей при создании foreign баланса"""
 
     key: 'BalanceTypesEnum'
-    amounts: list[Decimal] = Field(gt=0)
+    amounts: list[Decimal]
     currencies: list[str]
 

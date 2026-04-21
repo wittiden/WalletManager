@@ -71,7 +71,7 @@ class WalletQueriesRepository:
 
     def select_my_balance(self, wallet: 'WalletBase') -> 'BalanceBase':
         with self._session_factory() as session:
-            obj = session.execute(select(BalanceTable).where(BalanceTable.wallet_id == wallet.item_id)).one_or_none()
+            obj = session.execute(select(BalanceTable).where(BalanceTable.wallet_id == wallet.item_id)).scalar_one_or_none()
             return self._balance_mapper.table_to_domain(obj)
 
     def select_my_balances(self, wallet) -> 'BalanceBase':
@@ -80,6 +80,13 @@ class WalletQueriesRepository:
             objs = session.execute(select(BalanceTable).where(BalanceTable.wallet_id == wallet.item_id)).scalars().all()
 
             return self._balance_mapper.tables_to_domain(objs)
+
+    def select_balance(self, wallet_id: str) -> 'BalanceBase':
+        with self._session_factory() as session:
+
+            obj = session.execute(select(BalanceTable).where(BalanceTable.wallet_id == wallet_id)).scalars().one_or_none()
+
+            return self._balance_mapper.table_to_domain(obj)
 
     def select_balances(self, wallet_id: str) -> 'BalanceBase':
         with self._session_factory() as session:

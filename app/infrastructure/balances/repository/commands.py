@@ -35,9 +35,15 @@ class BalanceCommandsRepository:
 
     def upgrade_balance_info(self, balance: 'BalanceBase', new_balance_params: dict[str, Any]) -> None:
         with self._session_factory() as session:
-            objs = session.execute(select(BalanceTable).where(BalanceTable.wallet_id == balance.wallet_id)).all()
-            for key, value in new_balance_params.items():
-                for obj in objs:
+            if balance.balance_type == BalanceTypesEnum.REGULAR:
+                obj = session.execute(select(BalanceTable).where(BalanceTable.wallet_id == balance.wallet_id)).scalars().one_or_none()
+                for key, value in new_balance_params.items():
                     setattr(obj, key, value)
+
+            elif balance.balance_type == BalanceTypesEnum.FOREIGN:
+                objs = session.execute(select(BalanceTable).where(BalanceTable.wallet_id == balance.wallet_id)).scalars().all()
+                for key, value in new_balance_params.items():
+                    for obj in objs:
+                        setattr(obj, key, value)
 
             session.commit()
