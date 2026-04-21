@@ -1,10 +1,14 @@
+from decimal import Decimal
+
 import pytest
 from sqlalchemy import Engine
 
+from app.common.enums.transaction_enums import TransactionTypesEnum
 from app.common.enums.user_enums import UserStatusesEnum
 from app.core.utils import get_hash
 from app.database.base import Base
 from app.di.container import build_container
+from app.infrastructure.transactions.schemas import CreateDepositOrWithdrawTransactionSchema
 from app.infrastructure.users.schemas import CreateUserSchema, CloseUserSchema
 from app.infrastructure.users.use_cases import UserServiceFacade
 
@@ -45,3 +49,7 @@ def sample_create_admin_schema():
 @pytest.fixture
 def sample_close_user_schema():
     return CloseUserSchema(name='twotestschema', email='testschema2@gmail.com', password=get_hash('bw2fy728943tf&nh'))
+
+@pytest.fixture
+def sample_deposit_transaction():
+    return CreateDepositOrWithdrawTransactionSchema(currency='USD', from_address='12345678909876543210987654', to_address='12345678909876543210987654', amount=Decimal(20), fee=Decimal(1.001), operation_type=TransactionTypesEnum.DEPOSIT)

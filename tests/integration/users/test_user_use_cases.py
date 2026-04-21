@@ -85,7 +85,7 @@ class TestUserServiceFacade:
         assert unblocked_user.status == user.status
 
     @pytest.mark.integration
-    def test_close_user_good(self, container, sample_close_user_schema, sample_create_admin_schema):
+    def test_close_user(self, container, sample_close_user_schema, sample_create_admin_schema):
         facade = container.get(UserServiceFacade)
 
         user = facade.create_user(sample_create_admin_schema)

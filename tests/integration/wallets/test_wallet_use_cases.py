@@ -15,7 +15,7 @@ class TestWalletServiceFacade:
         (WalletTypesEnum.DEBIT, '1234'),
         (WalletTypesEnum.CREDIT, '1234'),
     ])
-    def test_create_wallet(self, container, load_client_to_db, key, pin):
+    def test_create_wallet_good(self, container, load_client_to_db, key, pin):
         facade = container.get(WalletServiceFacade)
 
         user = load_client_to_db
@@ -28,7 +28,7 @@ class TestWalletServiceFacade:
         assert wallet.account_type == key
 
     @pytest.mark.integration
-    def test_show_wallet(self, container, load_client_to_db):
+    def test_show_wallet_good(self, container, load_client_to_db):
         facade = container.get(WalletServiceFacade)
 
         user = load_client_to_db
@@ -43,7 +43,7 @@ class TestWalletServiceFacade:
             assert w.account_type == wallet.account_type
 
     @pytest.mark.integration
-    def test_block_wallet(self, container, load_client_to_db, load_admin_to_db):
+    def test_block_wallet_good(self, container, load_client_to_db, load_admin_to_db):
         facade = container.get(WalletServiceFacade)
 
         user = load_client_to_db
@@ -60,7 +60,7 @@ class TestWalletServiceFacade:
         assert blocked_wallet.account_type == wallet.account_type
 
     @pytest.mark.integration
-    def test_unblock_wallet(self, container, load_client_to_db, load_admin_to_db):
+    def test_unblock_wallet_good(self, container, load_client_to_db, load_admin_to_db):
         facade = container.get(WalletServiceFacade)
 
         user = load_client_to_db

@@ -22,7 +22,7 @@ class TestTransactionDomain:
         assert transaction.completed_at == completed_at
         assert transaction.amount == amount
         assert transaction.fee == fee
-        assert transaction.deposit_currency == currency
+        assert transaction.currency == currency
 
     @pytest.mark.unit
     @pytest.mark.parametrize('from_address, to_address, completed_at, amount, fee, operation_type, currency', [
@@ -36,14 +36,14 @@ class TestTransactionDomain:
         assert transaction.completed_at == completed_at
         assert transaction.amount == amount
         assert transaction.fee == fee
-        assert transaction.withdraw_currency == currency
+        assert transaction.currency == currency
 
     @pytest.mark.unit
-    @pytest.mark.parametrize('from_address, to_address, completed_at, amount, fee, operation_type, from_currency, to_currency', [
-        ('12345', '54321', datetime.now(), Decimal(1), Decimal(0.3), TransactionTypesEnum.WITHDRAW, 'USD', 'EUR'),
+    @pytest.mark.parametrize('from_address, to_address, completed_at, amount, fee, operation_type, from_currency, to_currency, rate', [
+        ('12345', '54321', datetime.now(), Decimal(1), Decimal(0.3), TransactionTypesEnum.WITHDRAW, 'USD', 'EUR', Decimal(10.9)),
     ])
-    def test_exchange_transaction_good(self, from_address, to_address, completed_at, amount, operation_type, fee, from_currency, to_currency):
-        transaction = ExchangeTransaction(from_address, to_address, completed_at, amount, fee, from_currency, to_currency)
+    def test_exchange_transaction_good(self, from_address, to_address, completed_at, amount, operation_type, fee, from_currency, to_currency, rate):
+        transaction = ExchangeTransaction(from_address, to_address, completed_at, amount, fee, from_currency, to_currency, rate)
 
         assert transaction.from_address == from_address
         assert transaction.to_address == to_address
@@ -52,6 +52,7 @@ class TestTransactionDomain:
         assert transaction.fee == fee
         assert transaction.from_currency == from_currency
         assert transaction.to_currency == to_currency
+        assert transaction.rate == rate
 
     @pytest.mark.unit
     @pytest.mark.parametrize('from_address, to_address, completed_at, amount, fee, operation_type, currency', [
@@ -67,10 +68,11 @@ class TestTransactionDomain:
             DepositTransaction(from_address, to_address, completed_at, amount, fee, currency)
 
     @pytest.mark.unit
-    @pytest.mark.parametrize('from_address, to_address, completed_at, amount, fee, operation_type, from_currency, to_currency', [
-        ('12345', '54321', datetime.now(), Decimal(1), Decimal(0.2), TransactionTypesEnum.DEPOSIT, '', 'BYN'),
-        ('12345', '54321', datetime.now(), Decimal(1), Decimal(0.2), TransactionTypesEnum.DEPOSIT, 'USD', ''),
+    @pytest.mark.parametrize('from_address, to_address, completed_at, amount, fee, operation_type, from_currency, to_currency, rate', [
+        ('12345', '54321', datetime.now(), Decimal(1), Decimal(0.2), TransactionTypesEnum.DEPOSIT, '', 'BYN', Decimal(3.02)),
+        ('12345', '54321', datetime.now(), Decimal(1), Decimal(0.2), TransactionTypesEnum.DEPOSIT, 'USD', '', Decimal(3.02)),
+        ('12345', '54321', datetime.now(), Decimal(1), Decimal(0.2), TransactionTypesEnum.DEPOSIT, 'USD', 'BYN', Decimal(-3.02)),
     ])
-    def test_exchange_transaction_bad(self, from_address, to_address, completed_at, amount, operation_type, fee, from_currency, to_currency):
+    def test_exchange_transaction_bad(self, from_address, to_address, completed_at, amount, operation_type, fee, from_currency, to_currency, rate):
         with pytest.raises(ValueError):
-            ExchangeTransaction(from_address, to_address, completed_at, amount, fee, from_currency, to_currency)
+            ExchangeTransaction(from_address, to_address, completed_at, amount, fee, from_currency, to_currency, rate)

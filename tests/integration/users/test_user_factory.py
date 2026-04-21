@@ -12,7 +12,7 @@ class TestUserFactory:
         UserStatusesEnum.CLIENT,
         UserStatusesEnum.ADMIN,
     ])
-    def test_create_user(self, container, sample_user_base, key):
+    def test_create_user_good(self, container, sample_user_base, key):
         user_factory = container.get(UserFactory)
 
         user = user_factory.create_user(key, sample_user_base.name, sample_user_base.email, sample_user_base.password)

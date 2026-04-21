@@ -13,14 +13,13 @@ def validate_address(address: str) -> str:
 
 
 class CreateDepositOrWithdrawTransactionSchema(BaseModel):
-    """Класс схема для проверки полей при создании debit транзакции"""
+    """Класс схема для проверки полей при создании транзакций пополнения и снятия"""
 
     currency: str
     from_address: str
     to_address: str
     amount: Decimal = Field(gt=0)
     fee: Decimal = Field(ge=0)
-    operation_status: TransactionStatusesEnum
     operation_type: TransactionTypesEnum
 
     @field_validator('from_address', 'to_address')
@@ -35,12 +34,11 @@ class CreateExchangeTransactionSchema(BaseModel):
     from_address: str
     to_address: str
     amount: Decimal = Field(gt=0)
-    fee: Decimal = Field(ge=0)
-    operation_status: TransactionStatusesEnum
+    fee: Decimal = Field(gt=0)
     operation_type: TransactionTypesEnum
-    exchange_fee: Decimal = Field(gt=0)
     from_currency: str
     to_currency: str
+    rate: Decimal = Field(gt=0)
 
     @field_validator('from_address', 'to_address')
     @classmethod

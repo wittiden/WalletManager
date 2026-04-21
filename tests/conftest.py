@@ -38,4 +38,4 @@ def sample_transaction_withdraw():
 
 @pytest.fixture
 def sample_transaction_exchange():
-    return ExchangeTransaction('12345', '54321', datetime.datetime.now(), Decimal(1), Decimal(0.03), 'USD', 'BYN')
+    return ExchangeTransaction('12345', '54321', datetime.datetime.now(), Decimal(1), Decimal(0.03), 'USD', 'BYN', Decimal(13.6))

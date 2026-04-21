@@ -22,8 +22,9 @@ class TransactionTable(Base):
     fee: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=True)
     from_currency: Mapped[str] = mapped_column(nullable=True)
     to_currency: Mapped[str] = mapped_column(nullable=True)
+    rate: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=True)
 
     def __repr__(self) -> str:
-        return f'{self.operation_type.value} #{self.transaction_id} (from_address: {self.from_address}, to_address: {self.to_address}, completed_at: {self.completed_at}, amount: {self.amount}, operation_status: {self.operation_status.value}, fee: {self.fee}, from_currency: {self.from_currency}, to_currency: {self.to_currency})'
+        return f'{self.operation_type.value} #{self.transaction_id} (from_address: {self.from_address}, to_address: {self.to_address}, completed_at: {self.completed_at}, amount: {self.amount}, operation_status: {self.operation_status.value}, fee: {self.fee}, from_currency: {self.from_currency}, to_currency: {self.to_currency}, rate: {self.rate})'
 
     __str__ = __repr__
