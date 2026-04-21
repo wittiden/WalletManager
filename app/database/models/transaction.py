@@ -1,10 +1,11 @@
 from datetime import datetime
 from decimal import Decimal
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import String, Numeric, DateTime, Enum
 
-from app.database.base import Base
+from sqlalchemy import DateTime, Enum, Numeric, String
+from sqlalchemy.orm import Mapped, mapped_column
+
 from app.common.enums.transaction_enums import TransactionStatusesEnum, TransactionTypesEnum
+from app.database.base import Base
 
 
 class TransactionTable(Base):
@@ -16,7 +17,7 @@ class TransactionTable(Base):
     from_address: Mapped[str] = mapped_column(String(26), nullable=False)
     to_address: Mapped[str] = mapped_column(String(26), nullable=False)
     completed_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-    amount: Mapped[Decimal] = mapped_column(Numeric(10,2), nullable=False)
+    amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     operation_status: Mapped['TransactionStatusesEnum'] = mapped_column(Enum(TransactionStatusesEnum, name='transaction_status_enum'), nullable=True)
     operation_type: Mapped['TransactionTypesEnum'] = mapped_column(Enum(TransactionTypesEnum, name='transaction_type_enum'), default=TransactionTypesEnum.UNKNOWN, nullable=False)
     fee: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=True)

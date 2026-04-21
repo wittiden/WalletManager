@@ -1,7 +1,7 @@
-import requests
-from bs4 import BeautifulSoup
 import fake_useragent
+import requests
 from aenum import extend_enum
+from bs4 import BeautifulSoup
 
 from app.common.enums.balance_enums import WalletBalanceCurrenciesEnum
 from app.core.exceptions import WebElementNotFoundError
@@ -16,12 +16,11 @@ def start_currencies_name_parser() -> list:
     response = requests.get(link, headers=header)
     if response:
         soup = BeautifulSoup(response.text, 'lxml')
-        currency_block = soup.find('div', class_="converter-container__inputs")
+        currency_block = soup.find('div', class_='converter-container__inputs')
 
         if currency_block:
-
-            currency_abbr_elements = currency_block.find_all('span', class_="converter-container__item-currency-abbr")
-            currency_name_elements = currency_block.find_all('div', class_="converter-container__item-currency-name")
+            currency_abbr_elements = currency_block.find_all('span', class_='converter-container__item-currency-abbr')
+            currency_name_elements = currency_block.find_all('div', class_='converter-container__item-currency-name')
 
             if currency_name_elements and currency_abbr_elements:
                 currency_name_list = []

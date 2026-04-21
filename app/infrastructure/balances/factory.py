@@ -13,7 +13,7 @@ class BalanceRegistry:
     """Класс для регистрации типов балансов"""
 
     def __init__(self) -> None:
-        self._registrations: dict['BalanceTypesEnum', type['BalanceBase']] = {}
+        self._registrations: dict[BalanceTypesEnum, type[BalanceBase]] = {}
 
     def set_registration(self, key: 'BalanceTypesEnum', value: type['BalanceBase']) -> None:
         self._registrations[key] = value

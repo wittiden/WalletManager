@@ -1,18 +1,45 @@
 [tool.ruff]
-target-version = 'py312'
-
-line-length = 88
+target-version = "py312"
+line-length = 180
 
 exclude = [
-    '.venv',
-    '__pycache__',
-    '.git',
+    ".venv",
+    "__pycache__",
+    ".git",
+    "alembic/versions",
+    "build",
+    "dist",
+]
+
+extend-exclude = [
+    "migrations",
 ]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "B"]
+select = [
+    "E",  # pycodestyle errors
+    "F",  # pyflakes
+    "I",  # import sorting (isort replacement)
+    "B",  # bugbear
+    "UP", # pyupgrade (очень полезно для py312)
+    "SIM", # simplifications
+]
 
-ignore = ['E501']
+ignore = [
+    "E501",
+    "B008",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+    "S101",
+]
+
+"app/di/*" = [
+    "B008",
+]
 
 [tool.ruff.format]
-quote-style = 'single'
+quote-style = "single"
+
+line-ending = "lf"

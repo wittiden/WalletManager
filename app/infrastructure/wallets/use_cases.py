@@ -1,26 +1,34 @@
 from typing import TYPE_CHECKING
+
 from sqlalchemy.exc import IntegrityError
 
 from app.common.enums.wallet_enums import WalletTypesEnum
 from app.core.decorators import debug_log, info_log
 from app.core.exceptions import WalletIsBlockedError, WalletIsNotBlockedError
 from app.core.utils import get_hash
-from app.core.validations import UseCasesValidation, GeneralValidation
+from app.core.validations import GeneralValidation, UseCasesValidation
 
 if TYPE_CHECKING:
     from app.infrastructure.users.domain import UserBase
+    from app.infrastructure.users.repository.commands import UserCommandsRepository
+    from app.infrastructure.wallets.domain import WalletBase
     from app.infrastructure.wallets.factory import WalletFactory
-    from app.infrastructure.wallets.schemas import CreateWalletSchema, CloseWalletSchema
     from app.infrastructure.wallets.repository.commands import WalletCommandsRepository
     from app.infrastructure.wallets.repository.queries import WalletQueriesRepository
-    from app.infrastructure.wallets.domain import WalletBase
-    from app.infrastructure.users.repository.commands import UserCommandsRepository
+    from app.infrastructure.wallets.schemas import CloseWalletSchema, CreateWalletSchema
 
 
 class WalletServiceFacade:
     """Класс фасад для управления сервисами кошельков"""
 
-    def __init__(self, create_wallet_service: 'CreateWalletService', show_wallet_service: 'ShowWalletService', sort_wallet_service: 'SortWalletService', block_wallet_service: 'BlockWalletService', close_wallet_service: 'CloseWalletService') -> None:
+    def __init__(
+        self,
+        create_wallet_service: 'CreateWalletService',
+        show_wallet_service: 'ShowWalletService',
+        sort_wallet_service: 'SortWalletService',
+        block_wallet_service: 'BlockWalletService',
+        close_wallet_service: 'CloseWalletService',
+    ) -> None:
         self._create_wallet_service = create_wallet_service
         self._show_wallet_service = show_wallet_service
         self._sort_wallet_service = sort_wallet_service
@@ -149,7 +157,7 @@ class BlockWalletService:
         if obj.is_blocked:
             raise WalletIsBlockedError
 
-        self._wallet_commands_repository.update_wallet_info(obj,{'is_blocked': True})
+        self._wallet_commands_repository.update_wallet_info(obj, {'is_blocked': True})
 
     def unblock_wallet(self, user: 'UserBase', find_wallet_id: str) -> None:
         UseCasesValidation.is_admin_checker(user)
@@ -159,7 +167,7 @@ class BlockWalletService:
         if not obj.is_blocked:
             raise WalletIsNotBlockedError
 
-        self._wallet_commands_repository.update_wallet_info(obj,{'is_blocked': False})
+        self._wallet_commands_repository.update_wallet_info(obj, {'is_blocked': False})
 
 
 class CloseWalletService:

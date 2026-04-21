@@ -1,5 +1,7 @@
 import functools
-from typing import Callable, TypeVar, ParamSpec, Concatenate, Any
+from collections.abc import Callable
+from typing import Concatenate, ParamSpec, TypeVar
+
 from loguru import logger
 
 T = TypeVar('T')
@@ -14,6 +16,7 @@ def debug_log(func: Callable[Concatenate[Self, P], T]) -> Callable[Concatenate[S
         result = func(self, *args, **kwargs)
         logger.debug('end - {}', func.__name__)
         return result
+
     return wrapped
 
 
@@ -27,5 +30,7 @@ def info_log(strat_info: str | None, end_info: str | None) -> Callable[Concatena
             if end_info is not None:
                 logger.info(end_info)
             return result
+
         return wrapped
+
     return wrapper

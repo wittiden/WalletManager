@@ -1,7 +1,8 @@
 from decimal import Decimal
-from pydantic import BaseModel, field_validator, Field
 
-from app.common.enums.transaction_enums import TransactionStatusesEnum, TransactionTypesEnum
+from pydantic import BaseModel, Field, field_validator
+
+from app.common.enums.transaction_enums import TransactionTypesEnum
 from app.core.exceptions import AddressFormatError
 
 

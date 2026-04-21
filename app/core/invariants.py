@@ -38,4 +38,3 @@ class DomainInvariant:
             raise ValueError(f'{attrib_name} < 0')
 
         return value
-

@@ -1,42 +1,44 @@
-from dishka import Provider, provide, make_container, Scope
+from dishka import Provider, Scope, make_container, provide
 from sqlalchemy import Engine, create_engine
-from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncEngine, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
-from app.database.config import Settings
 from app.common.enums.balance_enums import BalanceTypesEnum
 from app.common.enums.transaction_enums import TransactionTypesEnum
 from app.common.enums.user_enums import UserStatusesEnum
 from app.common.enums.wallet_enums import WalletTypesEnum
-from app.infrastructure.balances.domain import RegularBalance, ForeignBalance
+from app.database.config import Settings
+from app.infrastructure.balances.domain import ForeignBalance, RegularBalance
 from app.infrastructure.balances.factory import BalanceFactory, BalanceRegistry
 from app.infrastructure.balances.repository.commands import BalanceCommandsRepository
 from app.infrastructure.balances.repository.mapper import BalanceMapper
-from app.infrastructure.balances.use_cases import CreateBalanceService, ShowBalanceService, FreezeBalanceService, \
-    BalanceServiceFacade, BalanceOperationsServiceFacade, WithdrawBalanceOperationService, \
-    DepositBalanceOperationService
-
-from app.infrastructure.transactions.domain import DepositTransaction, WithdrawTransaction, ExchangeTransaction
+from app.infrastructure.balances.use_cases import (
+    BalanceOperationsServiceFacade,
+    BalanceServiceFacade,
+    CreateBalanceService,
+    DepositBalanceOperationService,
+    FreezeBalanceService,
+    ShowBalanceService,
+    WithdrawBalanceOperationService,
+)
+from app.infrastructure.transactions.domain import DepositTransaction, ExchangeTransaction, WithdrawTransaction
 from app.infrastructure.transactions.factory import TransactionFactory, TransactionRegistry
 from app.infrastructure.transactions.repository.commands import TransactionCommandsRepository
 from app.infrastructure.transactions.repository.mapper import TransactionMapper
 from app.infrastructure.transactions.repository.queries import TransactionQueriesRepository
-from app.infrastructure.transactions.use_cases import CreateTransactionService, ShowTransactionService, \
-    SortTransactionService, TransactionServiceFacade, UpdateTransactionService
-from app.infrastructure.users.domain import Client, Admin
+from app.infrastructure.transactions.use_cases import CreateTransactionService, ShowTransactionService, SortTransactionService, TransactionServiceFacade, UpdateTransactionService
+from app.infrastructure.users.domain import Admin, Client
 from app.infrastructure.users.factory import UserFactory, UserRegistrations
 from app.infrastructure.users.repository.commands import UserCommandsRepository
 from app.infrastructure.users.repository.mapper import UserMapper
 from app.infrastructure.users.repository.queries import UserQueriesRepository
-from app.infrastructure.users.use_cases import CreateUserService, LoginUserService, ShowUserService, SortUserService, \
-    BlockUserService, CloseUserService, UserServiceFacade
-from app.infrastructure.wallets.domain import DebitWallet, CreditWallet
+from app.infrastructure.users.use_cases import BlockUserService, CloseUserService, CreateUserService, LoginUserService, ShowUserService, SortUserService, UserServiceFacade
+from app.infrastructure.wallets.domain import CreditWallet, DebitWallet
 from app.infrastructure.wallets.factory import WalletFactory, WalletFactoryRegistry
 from app.infrastructure.wallets.repository.commands import WalletCommandsRepository
 from app.infrastructure.wallets.repository.mapper import WalletMapper
 from app.infrastructure.wallets.repository.queries import WalletQueriesRepository
-from app.infrastructure.wallets.use_cases import CreateWalletService, ShowWalletService, SortWalletService, \
-    BlockWalletService, CloseWalletService, WalletServiceFacade
+from app.infrastructure.wallets.use_cases import BlockWalletService, CloseWalletService, CreateWalletService, ShowWalletService, SortWalletService, WalletServiceFacade
 
 
 class FactoryProvider(Provider):
@@ -113,19 +115,11 @@ class DatabaseEngineProvider(Provider):
 
     @provide
     def database_create_engine(self, settings: 'Settings') -> Engine:
-        return create_engine(
-            settings.database_url_psycopg,
-            echo=False,
-            pool_size=5,
-            max_overflow=10
-        )
+        return create_engine(settings.database_url_psycopg, echo=False, pool_size=5, max_overflow=10)
 
     @provide
     def database_create_async_engine(self, settings: 'Settings') -> AsyncEngine:
-        return create_async_engine(
-            settings.database_url_asyncpg,
-            echo=False
-        )
+        return create_async_engine(settings.database_url_asyncpg, echo=False)
 
 
 class DatabaseSessionProvider(Provider):
@@ -182,7 +176,9 @@ class FacadeProvider(Provider):
     scope = Scope.APP
 
     @provide
-    def user_service_facade(self, user_factory: 'UserFactory', user_commands_repository: 'UserCommandsRepository', user_queries_repository: 'UserQueriesRepository') -> 'UserServiceFacade':
+    def user_service_facade(
+        self, user_factory: 'UserFactory', user_commands_repository: 'UserCommandsRepository', user_queries_repository: 'UserQueriesRepository'
+    ) -> 'UserServiceFacade':
         create_user_service = CreateUserService(user_factory, user_commands_repository)
         login_user_service = LoginUserService(user_queries_repository)
         show_user_service = ShowUserService(user_queries_repository)
@@ -192,7 +188,13 @@ class FacadeProvider(Provider):
         return UserServiceFacade(create_user_service, login_user_service, show_user_service, block_user_service, sort_user_service, close_user_service)
 
     @provide
-    def wallet_service_facade(self, wallet_factory: 'WalletFactory', wallet_commands_repository: 'WalletCommandsRepository', wallet_queries_repository: 'WalletQueriesRepository', user_commands_repository: 'UserCommandsRepository') -> 'WalletServiceFacade':
+    def wallet_service_facade(
+        self,
+        wallet_factory: 'WalletFactory',
+        wallet_commands_repository: 'WalletCommandsRepository',
+        wallet_queries_repository: 'WalletQueriesRepository',
+        user_commands_repository: 'UserCommandsRepository',
+    ) -> 'WalletServiceFacade':
         create_wallet_service = CreateWalletService(wallet_factory, wallet_commands_repository, user_commands_repository)
         show_wallet_service = ShowWalletService(wallet_queries_repository)
         sort_wallet_service = SortWalletService(wallet_queries_repository)
@@ -201,20 +203,29 @@ class FacadeProvider(Provider):
         return WalletServiceFacade(create_wallet_service, show_wallet_service, sort_wallet_service, block_wallet_service, close_wallet_service)
 
     @provide
-    def balance_service_facade(self, balance_factory: 'BalanceFactory', balance_commands_repository: 'BalanceCommandsRepository', wallet_queries_repository: 'WalletQueriesRepository') -> 'BalanceServiceFacade':
+    def balance_service_facade(
+        self, balance_factory: 'BalanceFactory', balance_commands_repository: 'BalanceCommandsRepository', wallet_queries_repository: 'WalletQueriesRepository'
+    ) -> 'BalanceServiceFacade':
         create_balance_service = CreateBalanceService(balance_factory, balance_commands_repository)
         show_balance_service = ShowBalanceService(wallet_queries_repository)
         freeze_balance_service = FreezeBalanceService(wallet_queries_repository, balance_commands_repository)
         return BalanceServiceFacade(create_balance_service, show_balance_service, freeze_balance_service)
 
     @provide
-    def balance_operation_service_facade(self, transaction_commands_repository: 'TransactionCommandsRepository', balance_commands_repository: 'BalanceCommandsRepository') -> 'BalanceOperationsServiceFacade':
+    def balance_operation_service_facade(
+        self, transaction_commands_repository: 'TransactionCommandsRepository', balance_commands_repository: 'BalanceCommandsRepository'
+    ) -> 'BalanceOperationsServiceFacade':
         deposit_balance_operation_service = DepositBalanceOperationService(transaction_commands_repository, balance_commands_repository)
         withdraw_balance_operation_service = WithdrawBalanceOperationService(transaction_commands_repository, balance_commands_repository)
         return BalanceOperationsServiceFacade(deposit_balance_operation_service, withdraw_balance_operation_service)
 
     @provide
-    def transaction_service_facade(self, transaction_factory: 'TransactionFactory', transaction_commands_repository: 'TransactionCommandsRepository', transaction_queries_repository: 'TransactionQueriesRepository') -> 'TransactionServiceFacade':
+    def transaction_service_facade(
+        self,
+        transaction_factory: 'TransactionFactory',
+        transaction_commands_repository: 'TransactionCommandsRepository',
+        transaction_queries_repository: 'TransactionQueriesRepository',
+    ) -> 'TransactionServiceFacade':
         create_transaction_service = CreateTransactionService(transaction_factory, transaction_commands_repository)
         show_transaction_service = ShowTransactionService(transaction_queries_repository)
         sort_transaction_service = SortTransactionService(transaction_queries_repository)
@@ -223,4 +234,6 @@ class FacadeProvider(Provider):
 
 
 def build_container():
-    return make_container(FactoryProvider(), MapperProvider(), DatabaseSettingsProvider(), DatabaseEngineProvider(), DatabaseSessionProvider(), RepositoryProvider(), FacadeProvider())
+    return make_container(
+        FactoryProvider(), MapperProvider(), DatabaseSettingsProvider(), DatabaseEngineProvider(), DatabaseSessionProvider(), RepositoryProvider(), FacadeProvider()
+    )

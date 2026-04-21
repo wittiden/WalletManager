@@ -1,4 +1,4 @@
-from typing import ParamSpec, TYPE_CHECKING
+from typing import TYPE_CHECKING, ParamSpec
 
 from app.common.enums.wallet_enums import WalletTypesEnum
 from app.core.validations import GeneralValidation
@@ -13,7 +13,7 @@ class WalletFactoryRegistry:
     """Класс регистрирующий типы данных кошельков для работы фабрики"""
 
     def __init__(self) -> None:
-        self._registrations: dict['WalletTypesEnum', type['WalletBase']] = {}
+        self._registrations: dict[WalletTypesEnum, type[WalletBase]] = {}
 
     def set_registration(self, key: 'WalletTypesEnum', value: type['WalletBase']) -> None:
         self._registrations[key] = value

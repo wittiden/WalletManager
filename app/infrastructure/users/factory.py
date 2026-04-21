@@ -13,7 +13,7 @@ class UserRegistrations:
     """Класс для регистрации типов пользователей"""
 
     def __init__(self) -> None:
-        self._user_registry_dict: dict['UserStatusesEnum', type['UserBase']] = {}
+        self._user_registry_dict: dict[UserStatusesEnum, type[UserBase]] = {}
 
     def set_registration(self, key: 'UserStatusesEnum', value: type['UserBase']) -> None:
         self._user_registry_dict[key] = value

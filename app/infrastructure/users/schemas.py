@@ -1,18 +1,18 @@
 from pydantic import BaseModel, EmailStr, field_validator
 
 from app.common.enums.user_enums import UserStatusesEnum
-from app.core.exceptions import PasswordFormatError, NameFormatError
+from app.core.exceptions import NameFormatError, PasswordFormatError
 
 
 def validate_password(password: str) -> str:
     if len(password) < 8:
-        raise PasswordFormatError("Password too short")
+        raise PasswordFormatError('Password too short')
 
     if not any(ch.isdigit() for ch in password):
-        raise PasswordFormatError("Password must contain digits")
+        raise PasswordFormatError('Password must contain digits')
 
-    if not any(ch in "!@#$%^&*()?" for ch in password):
-        raise PasswordFormatError("Password must contain special symbols")
+    if not any(ch in '!@#$%^&*()?' for ch in password):
+        raise PasswordFormatError('Password must contain special symbols')
 
     return password
 

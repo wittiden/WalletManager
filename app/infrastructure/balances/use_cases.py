@@ -1,24 +1,24 @@
 import datetime
 from decimal import Decimal
-from sqlalchemy.exc import IntegrityError
 from typing import TYPE_CHECKING
+
+from sqlalchemy.exc import IntegrityError
 
 from app.common.enums.balance_enums import BalanceTypesEnum
 from app.common.enums.transaction_enums import TransactionStatusesEnum
 from app.core.decorators import debug_log, info_log
-from app.core.validations import UseCasesValidation, GeneralValidation
+from app.core.validations import GeneralValidation, UseCasesValidation
 
 if TYPE_CHECKING:
     from app.infrastructure.balances.domain import BalanceBase
     from app.infrastructure.balances.factory import BalanceFactory
     from app.infrastructure.balances.repository.commands import BalanceCommandsRepository
-    from app.infrastructure.balances.schemas import CreateForeignBalanceSchema
-    from app.infrastructure.balances.schemas import CreateRegularBalanceSchema
+    from app.infrastructure.balances.schemas import CreateForeignBalanceSchema, CreateRegularBalanceSchema
+    from app.infrastructure.transactions.domain import TransactionBase
+    from app.infrastructure.transactions.repository.commands import TransactionCommandsRepository
     from app.infrastructure.users.domain import UserBase
     from app.infrastructure.wallets.domain import WalletBase
     from app.infrastructure.wallets.repository.queries import WalletQueriesRepository
-    from app.infrastructure.transactions.domain import TransactionBase
-    from app.infrastructure.transactions.repository.commands import TransactionCommandsRepository
 
 
 class BalanceServiceFacade:
@@ -31,7 +31,7 @@ class BalanceServiceFacade:
 
     @debug_log
     @info_log(strat_info=None, end_info='Баланс открыт')
-    def create_balance(self, wallet: 'WalletBase',schema: 'CreateRegularBalanceSchema | CreateForeignBalanceSchema'):
+    def create_balance(self, wallet: 'WalletBase', schema: 'CreateRegularBalanceSchema | CreateForeignBalanceSchema'):
         if schema.key == BalanceTypesEnum.REGULAR:
             return self._create_balance_service.create_regular_balance(schema.key, wallet, schema.amount, schema.currency)
         elif schema.key == BalanceTypesEnum.FOREIGN:
@@ -201,17 +201,22 @@ class DepositBalanceOperationService:
 
         self._transaction_commands_repository.update_transaction_info(transaction, {'operation_status': TransactionStatusesEnum.PENDING})
         if transaction.currency != balance.currency:
-            raise ValueError("Currency mismatch")
+            raise ValueError('Currency mismatch')
 
         if balance.balance_type == BalanceTypesEnum.REGULAR:
             try:
                 balance.amount += transaction.amount * transaction.fee
             except ValueError:
-                self._transaction_commands_repository.update_transaction_info(transaction, {'operation_status': TransactionStatusesEnum.FAILED, 'completed_at': datetime.datetime.now()})
+                self._transaction_commands_repository.update_transaction_info(
+                    transaction, {'operation_status': TransactionStatusesEnum.FAILED, 'completed_at': datetime.datetime.now()}
+                )
                 raise ValueError
 
-            self._transaction_commands_repository.update_transaction_info(transaction, {'operation_status': TransactionStatusesEnum.SUCCESS, 'completed_at': datetime.datetime.now()})
+            self._transaction_commands_repository.update_transaction_info(
+                transaction, {'operation_status': TransactionStatusesEnum.SUCCESS, 'completed_at': datetime.datetime.now()}
+            )
             self._balance_commands_repository.upgrade_balance_info(balance, {'amount': balance.amount})
+
 
 class WithdrawBalanceOperationService:
     """Класс сервис для управления операциями по снятию денег с баланса"""
@@ -226,14 +231,18 @@ class WithdrawBalanceOperationService:
 
         self._transaction_commands_repository.update_transaction_info(transaction, {'operation_status': TransactionStatusesEnum.PENDING})
         if transaction.currency != balance.currency:
-            raise ValueError("Currency mismatch")
+            raise ValueError('Currency mismatch')
 
         if balance.balance_type == BalanceTypesEnum.REGULAR:
             try:
                 balance.amount -= transaction.amount * transaction.fee
             except ValueError:
-                self._transaction_commands_repository.update_transaction_info(transaction, {'operation_status': TransactionStatusesEnum.FAILED, 'completed_at': datetime.datetime.now()})
+                self._transaction_commands_repository.update_transaction_info(
+                    transaction, {'operation_status': TransactionStatusesEnum.FAILED, 'completed_at': datetime.datetime.now()}
+                )
                 raise ValueError
 
-            self._transaction_commands_repository.update_transaction_info(transaction, {'operation_status': TransactionStatusesEnum.SUCCESS, 'completed_at': datetime.datetime.now()})
+            self._transaction_commands_repository.update_transaction_info(
+                transaction, {'operation_status': TransactionStatusesEnum.SUCCESS, 'completed_at': datetime.datetime.now()}
+            )
             self._balance_commands_repository.upgrade_balance_info(balance, {'amount': balance.amount})

@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from pydantic import BaseModel, Field
+
 from app.common.enums.balance_enums import BalanceTypesEnum
 
 
@@ -18,4 +19,3 @@ class CreateForeignBalanceSchema(BaseModel):
     key: 'BalanceTypesEnum'
     amounts: list[Decimal]
     currencies: list[str]
-

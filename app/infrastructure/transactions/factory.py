@@ -13,7 +13,7 @@ class TransactionRegistry:
     """Класс для регистрации типов транзакций"""
 
     def __init__(self) -> None:
-        self._registrations: dict['TransactionTypesEnum', type['TransactionBase']] = {}
+        self._registrations: dict[TransactionTypesEnum, type[TransactionBase]] = {}
 
     def get_registration(self, key: 'TransactionTypesEnum') -> type['TransactionBase']:
         return GeneralValidation.not_none_checker(self._registrations.get(key))

@@ -2,18 +2,21 @@ import pytest
 from pytest_mock import MockerFixture
 
 from app.common.enums.wallet_enums import WalletTypesEnum
-from app.infrastructure.wallets.domain import WalletBase, CreditWallet, DebitWallet
+from app.infrastructure.wallets.domain import CreditWallet, DebitWallet, WalletBase
 
 
 class TestWalletDomain:
     """Класс для тестирования домена кошельков"""
 
     @pytest.mark.unit
-    @pytest.mark.parametrize('class_type, pin, owner_id, is_blocked, account_type', [
-        (WalletBase, '1234', 'test123343', False, WalletTypesEnum.UNKNOWN),
-        (CreditWallet, '1234', 'test123343', False, WalletTypesEnum.CREDIT),
-        (DebitWallet, '1234', 'test123343', False, WalletTypesEnum.DEBIT),
-    ])
+    @pytest.mark.parametrize(
+        'class_type, pin, owner_id, is_blocked, account_type',
+        [
+            (WalletBase, '1234', 'test123343', False, WalletTypesEnum.UNKNOWN),
+            (CreditWallet, '1234', 'test123343', False, WalletTypesEnum.CREDIT),
+            (DebitWallet, '1234', 'test123343', False, WalletTypesEnum.DEBIT),
+        ],
+    )
     def test_wallet_domain_good(self, class_type, pin, owner_id, is_blocked, account_type):
         obj = class_type(pin, owner_id)
         assert obj.pin == pin
@@ -22,10 +25,13 @@ class TestWalletDomain:
         assert obj.account_type == account_type
 
     @pytest.mark.unit
-    @pytest.mark.parametrize('pin, owner_id', [
-        ('', 'test13243'),
-        ('1234', ''),
-    ])
+    @pytest.mark.parametrize(
+        'pin, owner_id',
+        [
+            ('', 'test13243'),
+            ('1234', ''),
+        ],
+    )
     def test_wallet_domain_bad(self, pin, owner_id):
         with pytest.raises(ValueError):
             WalletBase(pin, owner_id)
@@ -37,7 +43,3 @@ class TestWalletDomain:
         sample_wallet_base.owner_id = 'new_owner_id'
 
         assert mock.call_count == 1
-
-
-
-

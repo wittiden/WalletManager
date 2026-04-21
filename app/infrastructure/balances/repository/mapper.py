@@ -40,7 +40,19 @@ class BalanceMapper:
     @staticmethod
     def domain_to_table(balance: 'BalanceBase') -> 'BalanceTable | list[BalanceTable]':
         if balance.balance_type == BalanceTypesEnum.REGULAR:
-            return BalanceTable(balance_id=balance.item_id, wallet_id=balance.wallet_id, is_frozen=balance.is_frozen, balance_type=balance.balance_type, currency=balance.currency, amount=balance.amount)
+            return BalanceTable(
+                balance_id=balance.item_id,
+                wallet_id=balance.wallet_id,
+                is_frozen=balance.is_frozen,
+                balance_type=balance.balance_type,
+                currency=balance.currency,
+                amount=balance.amount,
+            )
         elif balance.balance_type == BalanceTypesEnum.FOREIGN:
-            return [BalanceTable(balance_id=balance.item_id, wallet_id=balance.wallet_id, is_frozen=balance.is_frozen, balance_type=balance.balance_type, currency=currency, amount=amount) for currency, amount in zip(balance.currencies, balance.amounts)]
+            return [
+                BalanceTable(
+                    balance_id=balance.item_id, wallet_id=balance.wallet_id, is_frozen=balance.is_frozen, balance_type=balance.balance_type, currency=currency, amount=amount
+                )
+                for currency, amount in zip(balance.currencies, balance.amounts)
+            ]
         raise ValueError

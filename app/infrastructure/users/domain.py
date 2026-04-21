@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+
 from blinker import Signal
 
 from app.common.enums.user_enums import UserStatusesEnum

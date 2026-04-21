@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from decimal import Decimal
+
 from blinker import Signal
 
 from app.common.enums.balance_enums import BalanceTypesEnum
@@ -132,7 +133,6 @@ class ForeignBalance(BalanceBase):
     @currencies.setter
     def currencies(self, value: list[str]) -> None:
         self._currencies = DomainInvariant.no_empty_collection('currencies', value)
-
 
     def __repr__(self) -> str:
         return f'{super().__repr__()}\n{self._balance}'

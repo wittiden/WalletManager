@@ -1,4 +1,4 @@
-from pydantic import BaseModel, field_validator, Field
+from pydantic import BaseModel, Field, field_validator
 
 from app.common.enums.wallet_enums import WalletTypesEnum
 from app.core.exceptions import PinFormatError
@@ -36,4 +36,3 @@ class CloseWalletSchema(BaseModel):
     @classmethod
     def validate_pin(cls, pin: str) -> str:
         return validate_pin(pin)
-

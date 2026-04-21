@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+
 from sqlalchemy.exc import IntegrityError
 
 from app.common.enums.user_enums import UserStatusesEnum
@@ -19,7 +20,15 @@ if TYPE_CHECKING:
 class UserServiceFacade:
     """Фасадный сервис класс для управления сервисами"""
 
-    def __init__(self, create_user_service: 'CreateUserService', login_user_service: 'LoginUserService', show_user_service: 'ShowUserService', block_user_service: 'BlockUserService', sort_user_service: 'SortUserService', close_user_service: 'CloseUserService') -> None:
+    def __init__(
+        self,
+        create_user_service: 'CreateUserService',
+        login_user_service: 'LoginUserService',
+        show_user_service: 'ShowUserService',
+        block_user_service: 'BlockUserService',
+        sort_user_service: 'SortUserService',
+        close_user_service: 'CloseUserService',
+    ) -> None:
         self._create_user_service = create_user_service
         self._login_user_service = login_user_service
         self._show_user_service = show_user_service

@@ -4,8 +4,8 @@ import pytest
 
 from app.common.enums.balance_enums import BalanceTypesEnum
 from app.common.enums.transaction_enums import TransactionTypesEnum
-from app.infrastructure.balances.schemas import CreateRegularBalanceSchema, CreateForeignBalanceSchema
-from app.infrastructure.balances.use_cases import BalanceServiceFacade, BalanceOperationsServiceFacade
+from app.infrastructure.balances.schemas import CreateForeignBalanceSchema, CreateRegularBalanceSchema
+from app.infrastructure.balances.use_cases import BalanceOperationsServiceFacade, BalanceServiceFacade
 from app.infrastructure.transactions.schemas import CreateDepositOrWithdrawTransactionSchema
 from app.infrastructure.transactions.use_cases import TransactionServiceFacade
 
@@ -14,9 +14,12 @@ class TestBalanceServiceFacade:
     """Класс для тестирования работы фасада операций над балансом"""
 
     @pytest.mark.integration
-    @pytest.mark.parametrize('key, amount, currency', [
-        (BalanceTypesEnum.REGULAR, Decimal(10), 'USD'),
-    ])
+    @pytest.mark.parametrize(
+        'key, amount, currency',
+        [
+            (BalanceTypesEnum.REGULAR, Decimal(10), 'USD'),
+        ],
+    )
     def test_create_regular_balance_good(self, container, load_client_and_wallet_to_db, key, amount, currency):
         facade = container.get(BalanceServiceFacade)
 
@@ -31,9 +34,12 @@ class TestBalanceServiceFacade:
         assert balance.balance_type == key
 
     @pytest.mark.integration
-    @pytest.mark.parametrize('key, amounts, currencies', [
-        (BalanceTypesEnum.FOREIGN, [Decimal(10), Decimal(5), Decimal(3)], ['USD', 'BYN', 'EUR']),
-    ])
+    @pytest.mark.parametrize(
+        'key, amounts, currencies',
+        [
+            (BalanceTypesEnum.FOREIGN, [Decimal(10), Decimal(5), Decimal(3)], ['USD', 'BYN', 'EUR']),
+        ],
+    )
     def test_create_foreign_balance_good(self, container, load_client_and_wallet_to_db, key, amounts, currencies):
         facade = container.get(BalanceServiceFacade)
 
@@ -171,7 +177,9 @@ class TestBalanceOperationsServiceFacade:
 
         balance = balance_facade.create_balance(wallet, sample_regular_balance)
 
-        transaction_schema = CreateDepositOrWithdrawTransactionSchema(currency=balance.currency, from_address=wallet.address, to_address=wallet.address, amount=Decimal(100), fee=Decimal(1.02), operation_type=TransactionTypesEnum.DEPOSIT)
+        transaction_schema = CreateDepositOrWithdrawTransactionSchema(
+            currency=balance.currency, from_address=wallet.address, to_address=wallet.address, amount=Decimal(100), fee=Decimal(1.02), operation_type=TransactionTypesEnum.DEPOSIT
+        )
         transaction = transaction_facade.create_transaction(transaction_schema)
         operations_facade.deposit_balance(balance, transaction)
 
@@ -185,6 +193,8 @@ class TestBalanceOperationsServiceFacade:
 
         balance = balance_facade.create_balance(wallet, sample_regular_balance)
 
-        transaction_schema = CreateDepositOrWithdrawTransactionSchema(currency=balance.currency,from_address=wallet.address, to_address=wallet.address, amount=Decimal(10), fee=Decimal(1.02), operation_type=TransactionTypesEnum.WITHDRAW)
+        transaction_schema = CreateDepositOrWithdrawTransactionSchema(
+            currency=balance.currency, from_address=wallet.address, to_address=wallet.address, amount=Decimal(10), fee=Decimal(1.02), operation_type=TransactionTypesEnum.WITHDRAW
+        )
         transaction = transaction_facade.create_transaction(transaction_schema)
         operations_facade.withdraw_balance(balance, transaction)

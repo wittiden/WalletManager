@@ -1,12 +1,12 @@
 import uuid
 from dataclasses import dataclass, field
+
 from blinker import Signal
 
 from app.common.enums.wallet_enums import WalletTypesEnum
 from app.common.mixins import MixinId
 from app.core.invariants import DomainInvariant
 from app.core.utils import blink_func
-
 
 wallet_upgrade_signal = Signal()
 wallet_upgrade_signal.connect(blink_func)

@@ -2,19 +2,21 @@ import pytest
 
 from app.common.enums.wallet_enums import WalletTypesEnum
 from app.core.utils import get_hash
-from app.infrastructure.wallets.schemas import CreateWalletSchema, CloseWalletSchema
+from app.infrastructure.wallets.schemas import CloseWalletSchema, CreateWalletSchema
 from app.infrastructure.wallets.use_cases import WalletServiceFacade
-from tests.integration.conftest import load_admin_to_db
 
 
 class TestWalletServiceFacade:
     """Класс для тестирования работы фасада операций над кошельками"""
 
     @pytest.mark.integration
-    @pytest.mark.parametrize('key, pin', [
-        (WalletTypesEnum.DEBIT, '1234'),
-        (WalletTypesEnum.CREDIT, '1234'),
-    ])
+    @pytest.mark.parametrize(
+        'key, pin',
+        [
+            (WalletTypesEnum.DEBIT, '1234'),
+            (WalletTypesEnum.CREDIT, '1234'),
+        ],
+    )
     def test_create_wallet_good(self, container, load_client_to_db, key, pin):
         facade = container.get(WalletServiceFacade)
 

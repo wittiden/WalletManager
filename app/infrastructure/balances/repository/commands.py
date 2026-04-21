@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING, Any
+
+from sqlalchemy import delete, select
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import select, delete
 
 from app.common.enums.balance_enums import BalanceTypesEnum
 from app.database.models import BalanceTable

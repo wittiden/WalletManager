@@ -8,10 +8,13 @@ class TestWalletFactory:
     """Класс для тестирования фабрики кошельков"""
 
     @pytest.mark.integration
-    @pytest.mark.parametrize('key', [
-        WalletTypesEnum.DEBIT,
-        WalletTypesEnum.CREDIT,
-    ])
+    @pytest.mark.parametrize(
+        'key',
+        [
+            WalletTypesEnum.DEBIT,
+            WalletTypesEnum.CREDIT,
+        ],
+    )
     def test_create_wallet_factory_good(self, container, sample_wallet_base, key):
         wallet_factory = container.get(WalletFactory)
 
@@ -19,4 +22,3 @@ class TestWalletFactory:
 
         assert wallet.pin == sample_wallet_base.pin
         assert wallet.owner_id == sample_wallet_base.owner_id
-

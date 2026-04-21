@@ -15,7 +15,9 @@ class WalletMapper:
 
     @staticmethod
     def domain_to_table(wallet: 'WalletBase') -> 'WalletTable':
-        return WalletTable(wallet_id=wallet.item_id, pin=wallet.pin, owner_id=wallet.owner_id, address=wallet.address, is_blocked=wallet.is_blocked, account_type=wallet.account_type)
+        return WalletTable(
+            wallet_id=wallet.item_id, pin=wallet.pin, owner_id=wallet.owner_id, address=wallet.address, is_blocked=wallet.is_blocked, account_type=wallet.account_type
+        )
 
     def table_to_domain(self, wallet_table: 'WalletTable') -> 'WalletBase':
         if wallet_table is None:

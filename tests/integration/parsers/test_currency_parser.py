@@ -1,7 +1,7 @@
 import pytest
 
 from app.common.enums.balance_enums import WalletBalanceCurrenciesEnum
-from app.parsers.currencies_name_parser import start_currencies_name_parser, load_currencies_name_into_enum
+from app.parsers.currencies_name_parser import load_currencies_name_into_enum, start_currencies_name_parser
 
 
 class TestCurrencyParser:

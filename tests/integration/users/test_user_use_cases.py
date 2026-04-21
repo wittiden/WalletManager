@@ -10,10 +10,13 @@ class TestUserServiceFacade:
     """Класс для тестирования работы фасада операций над пользователем"""
 
     @pytest.mark.integration
-    @pytest.mark.parametrize('key, name, email, password', [
-        (UserStatusesEnum.CLIENT, 'firsttest', 'test1@gmail.com', 'bw2fy728943tf&nh'),
-        (UserStatusesEnum.ADMIN, 'twotest', 'test2@gmail.com', 'bw2fy728943tf&nh'),
-    ])
+    @pytest.mark.parametrize(
+        'key, name, email, password',
+        [
+            (UserStatusesEnum.CLIENT, 'firsttest', 'test1@gmail.com', 'bw2fy728943tf&nh'),
+            (UserStatusesEnum.ADMIN, 'twotest', 'test2@gmail.com', 'bw2fy728943tf&nh'),
+        ],
+    )
     def test_create_user_good(self, container, key, name, email, password):
         schema = CreateUserSchema(key=key, name=name, email=email, password=password)
 

@@ -8,10 +8,13 @@ class TestUserFactory:
     """Класс для тестирования фабрики пользователей"""
 
     @pytest.mark.integration
-    @pytest.mark.parametrize('key', [
-        UserStatusesEnum.CLIENT,
-        UserStatusesEnum.ADMIN,
-    ])
+    @pytest.mark.parametrize(
+        'key',
+        [
+            UserStatusesEnum.CLIENT,
+            UserStatusesEnum.ADMIN,
+        ],
+    )
     def test_create_user_good(self, container, sample_user_base, key):
         user_factory = container.get(UserFactory)
 

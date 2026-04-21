@@ -1,15 +1,16 @@
 from typing import TYPE_CHECKING
+
 from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
 
-from app.database.models import WalletTable, BalanceTable
+from app.database.models import BalanceTable, WalletTable
 from app.infrastructure.balances.domain import BalanceBase
 
 if TYPE_CHECKING:
+    from app.infrastructure.balances.repository.mapper import BalanceMapper
     from app.infrastructure.users.domain import UserBase
     from app.infrastructure.wallets.domain import WalletBase
     from app.infrastructure.wallets.repository.mapper import WalletMapper
-    from app.infrastructure.balances.repository.mapper import BalanceMapper
 
 
 class WalletQueriesRepository:
@@ -76,21 +77,18 @@ class WalletQueriesRepository:
 
     def select_my_balances(self, wallet) -> 'BalanceBase':
         with self._session_factory() as session:
-
             objs = session.execute(select(BalanceTable).where(BalanceTable.wallet_id == wallet.item_id)).scalars().all()
 
             return self._balance_mapper.tables_to_domain(objs)
 
     def select_balance(self, wallet_id: str) -> 'BalanceBase':
         with self._session_factory() as session:
-
             obj = session.execute(select(BalanceTable).where(BalanceTable.wallet_id == wallet_id)).scalars().one_or_none()
 
             return self._balance_mapper.table_to_domain(obj)
 
     def select_balances(self, wallet_id: str) -> 'BalanceBase':
         with self._session_factory() as session:
-
             objs = session.execute(select(BalanceTable).where(BalanceTable.wallet_id == wallet_id)).scalars().all()
 
             return self._balance_mapper.tables_to_domain(objs)

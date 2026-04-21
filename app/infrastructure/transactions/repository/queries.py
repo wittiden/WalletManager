@@ -1,6 +1,7 @@
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import select
 from typing import TYPE_CHECKING
+
+from sqlalchemy import select
+from sqlalchemy.orm import sessionmaker
 
 from app.database.models.transaction import TransactionTable
 

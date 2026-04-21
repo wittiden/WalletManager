@@ -1,7 +1,7 @@
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from app.common.enums.user_enums import UserStatusesEnum
-from app.core.exceptions import IsNoneError, IsEmptyError, IsInstanceError, UserIsNotAdminError, UserIsNotClientError
+from app.core.exceptions import IsEmptyError, IsInstanceError, IsNoneError, UserIsNotAdminError, UserIsNotClientError
 
 if TYPE_CHECKING:
     from app.infrastructure.users.domain import UserBase

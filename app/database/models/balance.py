@@ -1,7 +1,8 @@
 from decimal import Decimal
 from typing import TYPE_CHECKING
+
+from sqlalchemy import Enum, ForeignKey, Index, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey, Numeric, Enum, Index
 
 from app.common.enums.balance_enums import BalanceTypesEnum
 from app.database.base import Base
@@ -14,9 +15,7 @@ class BalanceTable(Base):
     """Класс таблица балансов"""
 
     __tablename__ = 'balances'
-    __table_args__ = (
-        Index('wallet_id_index', 'wallet_id'),
-    )
+    __table_args__ = (Index('wallet_id_index', 'wallet_id'),)
 
     balance_id: Mapped[str] = mapped_column(primary_key=True)
     wallet_id: Mapped[str] = mapped_column(ForeignKey('wallets.wallet_id'), nullable=False)

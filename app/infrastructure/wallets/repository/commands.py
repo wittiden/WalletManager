@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING, Any
+
 from sqlalchemy.orm import sessionmaker
 
 from app.database.models import WalletTable
